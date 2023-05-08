@@ -1,0 +1,28 @@
+Package: broadSeq
+Title: The user can try different methods easily for RNA-seq data analysis.
+Version: 0.0.3
+Authors@R: 
+    person("Rishi", "Das Roy", , "rishi.dasroy@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-3276-7279"))
+Description: This package helps user to do easily RNA-seq data analysis with multiple 
+    methods (usually which needs many different input formats). Here the user will 
+    provid the expression data as a SummarizedExperiment object and will get results 
+    from different methods. It will help user to quickly evaluate different methods. 
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Suggests: 
+    baySeq (>= 2.31.0),
+    DESeq2 (>= 1.38.2),
+    EBSeq (>= 1.38.0),
+    edgeR (>= 3.40.1),
+    limma (>= 3.54.0),
+    purrr (>= 0.3.5),
+    stats (>= 4.2.2)
+Depends: 
+    dplyr (>= 1.0.10)
+Imports: 
+    ggplot2 (>= 3.4.0),
+    sechm (>= 1.6.0),
+    SummarizedExperiment (>= 1.28.0)
