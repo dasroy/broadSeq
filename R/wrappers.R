@@ -375,7 +375,10 @@ use_EBSeq <- function(smrExpt, class_id, control, treatment, rank=FALSE,...){
 }
 
 
-#' Title
+#' We can use as(smrExpt, "ExpressionSet") to get an eSet easily but
+#' then it will be hard to refer the treatment and control. The order
+#' of expt_factors influence the log fold change sign. To keep it
+#' comparable to other methods the expt_factors is used.
 #'
 #' @param smrExpt
 #' @param class_id
@@ -388,10 +391,6 @@ use_EBSeq <- function(smrExpt, class_id, control, treatment, rank=FALSE,...){
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
-#' We can use as(smrExpt, "ExpressionSet") to get an eSet easily but
-#' then it will be hard to refer the treatment and control. The order
-#' of expt_factors influence the log fold change sign. To keep it
-#' comparable to other methods the expt_factors is used.
 use_NOIseq <- function(smrExpt, class_id, control, treatment, rank=FALSE, ...){
     checkNameSpace("NOISeq")
     control_names <- smrExpt[,smrExpt[[class_id]]==control] %>% colnames()

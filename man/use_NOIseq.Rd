@@ -2,7 +2,10 @@
 % Please edit documentation in R/wrappers.R
 \name{use_NOIseq}
 \alias{use_NOIseq}
-\title{Title}
+\title{We can use as(smrExpt, "ExpressionSet") to get an eSet easily but
+then it will be hard to refer the treatment and control. The order
+of expt_factors influence the log fold change sign. To keep it
+comparable to other methods the expt_factors is used.}
 \usage{
 use_NOIseq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
 }
@@ -10,9 +13,6 @@ use_NOIseq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
 \item{...}{}
 }
 \description{
-Title
-}
-\examples{
 We can use as(smrExpt, "ExpressionSet") to get an eSet easily but
 then it will be hard to refer the treatment and control. The order
 of expt_factors influence the log fold change sign. To keep it
