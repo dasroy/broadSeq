@@ -21,7 +21,7 @@ Suggests:
     purrr (>= 0.3.5),
     stats (>= 4.2.2)
 Depends: 
-    dplyr (>= 1.0.10)
+    dplyr 
 Imports: 
     forcats (>= 1.0.0),
     genefilter (>= 1.82.1),
