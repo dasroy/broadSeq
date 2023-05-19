@@ -25,6 +25,6 @@ Depends:
 Imports: 
     forcats (>= 1.0.0),
     genefilter (>= 1.82.1),
-    ggplot2 (>= 3.4.0),
+    ggplot2 ,
     sechm (>= 1.6.0),
     SummarizedExperiment (>= 1.28.0)
