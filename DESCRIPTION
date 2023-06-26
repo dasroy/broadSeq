@@ -24,7 +24,7 @@ Suggests:
     stats (>= 4.2.2)
 Depends: 
     dplyr,
-    SummarizedExperiment (>= 1.28.0) 
+    SummarizedExperiment 
 Imports: 
     forcats (>= 1.0.0),
     genefilter,
