@@ -1,6 +1,6 @@
 Package: broadSeq
 Title: The user can try different methods easily for RNA-seq data analysis.
-Version: 0.0.3
+Version: 0.0.4
 Authors@R: 
     person("Rishi", "Das Roy", , "rishi.dasroy@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3276-7279"))
@@ -17,8 +17,10 @@ Suggests:
     DESeq2 (>= 1.38.2),
     EBSeq (>= 1.38.0),
     edgeR (>= 3.40.1),
+    knitr,
     limma (>= 3.54.0),
     purrr (>= 0.3.5),
+    rmarkdown,
     stats (>= 4.2.2)
 Depends: 
     dplyr 
@@ -28,3 +30,4 @@ Imports:
     ggplot2 ,
     sechm (>= 1.6.0),
     SummarizedExperiment (>= 1.28.0)
+VignetteBuilder: knitr
