@@ -26,7 +26,7 @@ Depends:
     dplyr 
 Imports: 
     forcats (>= 1.0.0),
-    genefilter (>= 1.82.1),
+    genefilter,
     ggplot2 ,
     sechm (>= 1.6.0),
     SummarizedExperiment (>= 1.28.0)
