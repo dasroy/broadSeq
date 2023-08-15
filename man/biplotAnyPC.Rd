@@ -4,20 +4,10 @@
 \alias{biplotAnyPC}
 \title{Title}
 \usage{
-biplotAnyPC(
-  computedPCA,
-  x,
-  y,
-  shapeBY = NULL,
-  colorBY = NULL,
-  sizeBY = NULL,
-  labelBY = NULL,
-  genes = NULL,
-  genesLabel = NULL
-)
+biplotAnyPC(computedPCA, x, y, genes = NULL, genesLabel = NULL, ...)
 }
 \arguments{
-\item{genes}{}
+\item{...}{}
 }
 \description{
 Title
