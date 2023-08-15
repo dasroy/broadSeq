@@ -495,18 +495,70 @@ use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
 #'
 #' @examples
 use_multDE <- function(deFun_list, return.df= FALSE ,smrExpt , class_id , control , treatment , ... ) {
-    wrap_it <- function( f, ...) f(... )
+    wrap_it <- function( f, ...) {
+        message(paste("Now executing >> ",f))
+        deFun_list[[f]](... )
+    }
+    SummarizedExperiment::colData(smrExpt)[,class_id] %>% summary()
 
-    y <- lapply(deFun_list, wrap_it, smrExpt = smrExpt, class_id = class_id,
+    y <- lapply(names(deFun_list), wrap_it, smrExpt = smrExpt, class_id = class_id,
                 control = control, treatment = treatment, ...)
+    named_result <- list()
+    for (i in 1:length(y)) {
+        named_result[[names(deFun_list)[i]]] <- y[[i]]
+    }
+    y <- named_result
+
     if(return.df){
         for (prefix in names(y)) {
             colnames(y[[prefix]]) <- paste(prefix,colnames(y[[prefix]]), sep = "_")
         }
+
         y <- purrr::reduce(lapply(y, function(x) data.frame(x, rn = row.names(x))),
                            merge, all=TRUE)
+        gene_info <- as.data.frame(SummarizedExperiment::rowData(smrExpt))
+        rownames(y) <- y$rn
+        y$rn <- NULL
+        y <- purrr::reduce(lapply(list(y,gene_info),
+                                function(x) data.frame(x, rn = row.names(x))),
+                         merge, all.x=TRUE)
         rownames(y) <- y$rn
         y$rn <- NULL
     }
     return(y)
+}
+
+#' Title
+#'
+#' @param df
+#' @param pValName
+#' @param lFCName
+#' @param sigThreshold
+#' @param logFCThreshold
+#' @param labelName
+#' @param selectedLabel
+#' @param palette one of "npg" ,"aaas", "lancet", "jco", "ucscgb", "uchicago", "simpsons" and "nejm" or similar to viridis::cividis(3)
+#'
+#' @return
+#' @export
+#' @importFrom dplyr %>% left_join if_else
+#' @importFrom ggpubr ggscatter
+#' @examples
+volcanoPlot <- function(df,pValName,lFCName, sigThreshold=0.05, logFCThreshold = 1,
+                        labelName=NULL, selectedLabel = NULL, palette = "nejm"){
+    df <- df %>% dplyr::mutate(padj=-log10(!!sym(pValName)),
+                              Significant = if_else((!!sym(pValName) < sigThreshold & !!sym(lFCName) > logFCThreshold),"UP",
+                                                    if_else((!!sym(pValName) < sigThreshold & !!sym(lFCName) < -logFCThreshold),"DOWN",
+                                                          "Not",missing="Not"),missing="Not"
+                              ))
+    df$Significant <- factor(df$Significant,levels = c("DOWN","UP","Not"))
+    plot <- df %>%  ggscatter(
+            x = lFCName, y = "padj",
+            color = "Significant", palette =palette,
+            title = "Volcano plot",
+            label = labelName, repel = TRUE,label.rectangle=TRUE, show.legend=FALSE,
+            label.select = selectedLabel)+
+        labs(x = expression("log"[2]*"FC"), y = expression("-log"[10]*"p-value"))+
+        geom_abline(intercept = -log10(sigThreshold), slope = 0, linetype="dashed")
+    return(plot)
 }
