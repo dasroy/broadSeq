@@ -28,6 +28,8 @@ Depends:
 Imports: 
     forcats (>= 1.0.0),
     genefilter,
-    ggplot2 ,
+    ggplot2,
+    ggpubr,
+    plyr,
     sechm (>= 1.6.0)
 VignetteBuilder: knitr

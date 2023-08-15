@@ -4,18 +4,10 @@
 \alias{plotAnyPC}
 \title{Title}
 \usage{
-plotAnyPC(
-  computedPCA,
-  x,
-  y,
-  shapeBY = NULL,
-  colorBY = NULL,
-  sizeBY = NULL,
-  labelBY = NULL
-)
+plotAnyPC(computedPCA, x, y, ...)
 }
 \arguments{
-\item{labelBY}{}
+\item{...}{}
 }
 \description{
 Title

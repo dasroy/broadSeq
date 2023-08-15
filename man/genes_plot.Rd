@@ -4,7 +4,7 @@
 \alias{genes_plot}
 \title{Title}
 \usage{
-genes_plot(smrExpt, features, x_factor, y_value)
+genes_plot(smrExpt, features, ...)
 }
 \arguments{
 \item{y_value}{}

@@ -38,10 +38,9 @@ plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,
 #'
 #' @return
 #' @export
-#'
+#' @importFrom ggpubr ggscatter ggpar
 #' @examples
-plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,
-                     shapeBY=NULL, colorBY=NULL, sizeBY=NULL, labelBY=NULL){
+plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,...){
     stopifnot(is(se, "SummarizedExperiment"))
     stopifnot("scaledAssay must be an assay of se"= (scaledAssay %in% assayNames(se)))
 
@@ -54,22 +53,18 @@ plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,
     mds <- data.frame(cmdscale(sampleDistMatrix))
     mds <- cbind(mds, colData(se))
     # mds %>% ggplot(aes(X1,X2,color=species,shape=stage))+geom_point()
-    if(!is.null(shapeBY)){
-        mds[,shapeBY] <- factor(mds[,shapeBY])
-    }
+    # if(!is.null(shape)){
+    #     mds[,shape] <- factor(mds[,shape])
+    # }
+    dottedArg <- list( ...)
+    if(!is.null(dottedArg$shape) ) mds[,dottedArg$shape] <- factor(mds[,dottedArg$shape])
+
     return(mds %>%
-    ggplot(aes_string("X1","X2",
-                      text=labelBY,
-                      shape=shapeBY,
-                      color=colorBY,
-                      size=sizeBY))+
-        geom_point()+
-        guides(shape=guide_legend(title = shapeBY,title.position = "top"),
-               color=guide_legend(title.position = "top",title = colorBY),
-               size=guide_legend(title.position = "top",title = sizeBY))+
-        scale_shape_manual(values=1:nlevels(mds[,shapeBY]))+
-        ggtitle(paste("Top ",length(selected_genes) ," variable genes"))+
-        theme_bw())
+               ggscatter(
+                   x = "X1", y = "X2",
+                   ...) %>%
+               ggpar(title = paste("Top ",length(selected_genes) ," variable genes"))
+        )
 }
 
 
@@ -128,6 +123,14 @@ prcompTidy <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL, ...){
         dplyr::select(gene, dplyr::everything())
     rownames(factor_loadings) <- factor_loadings$gene
 
+    gene_info <- as.data.frame(SummarizedExperiment::rowData(se))
+
+    factor_loadings <- purrr::reduce(lapply(list(factor_loadings,gene_info),
+                              function(x) data.frame(x, rn = row.names(x))),
+                       merge, all.x=TRUE)
+    rownames(factor_loadings) <- factor_loadings$rn
+    factor_loadings$rn <- NULL
+
     #### Convert the original data to a data.frame ####
     selected_expr <- selected_expr %>%
         as.data.frame() %>%
@@ -183,17 +186,39 @@ getSelectedGene <- function(genes, se, ntop, scaledAssay) {
 #' @param computedPCA
 #' @param x
 #' @param y
-#' @param shapeBY
-#' @param colorBY
-#' @param sizeBY
-#' @param labelBY
+#' @param ...
 #'
 #' @return
 #' @export
 #'
+#' @importFrom ggpubr ggscatter ggpar
 #' @examples
 #' @importFrom ggplot2 ggplot aes_string geom_point guide_legend guides guide_legend scale_shape_manual ggtitle labs theme_bw
-plotAnyPC <- function(computedPCA,x,y, shapeBY=NULL, colorBY=NULL, sizeBY=NULL, labelBY=NULL){
+plotAnyPC <- function(computedPCA,x,y, ...){
+    pc_x = paste("PC",x,sep = "")
+    pc_y = paste("PC",y,sep = "")
+    pct <- computedPCA$eigen_values %>%
+        dplyr::filter(PC %in% c(pc_x,pc_y)) %>%
+        dplyr::pull(var_pct) %>%
+        round(digits = 4) *100
+    dottedArg <- list( ...)
+
+    p <- computedPCA$pc_scores %>% ggscatter(x = pc_x, y = pc_y,...)
+    if(!is.null(dottedArg$shape) ) {
+        computedPCA$pc_scores[,dottedArg$shape] <- factor(computedPCA$pc_scores[,dottedArg$shape])
+        p <- p + scale_shape_manual(values=1:nlevels(computedPCA$pc_scores[,dottedArg$shape]))
+    }
+    return(
+        p %>%
+            ggpar(title = paste(nrow(computedPCA$original) ," variable genes"))
+        )
+            # ggtitle(paste("Top ",nrow(computedPCA$original) ," variable genes"))+
+            # labs(x=paste(pc_x,pct[1]),y=paste(pc_y,pct[2]))+
+            # theme_bw())
+}
+
+
+oldPlotAnyPC <- function(computedPCA,x,y, shapeBY=NULL, colorBY=NULL, sizeBY=NULL, labelBY=NULL){
     pc_x = paste("PC",x,sep = "")
     pc_y = paste("PC",y,sep = "")
     pct <- computedPCA$eigen_values %>%
@@ -205,12 +230,11 @@ plotAnyPC <- function(computedPCA,x,y, shapeBY=NULL, colorBY=NULL, sizeBY=NULL, 
     }
     return(
         computedPCA$pc_scores %>%
-            ggplot(aes_string(pc_x,pc_y,
-                              text=labelBY,
-                              shape=shapeBY,
-                              color=colorBY,
-                              size=sizeBY))+
-            geom_point()+
+            ggplot(aes(label=!!sym(labelBY)))+
+            geom_point(aes_string(pc_x,pc_y,
+                                  shape=shapeBY,
+                                  color=colorBY,
+                                  size=sizeBY))+
             guides(shape=guide_legend(title = shapeBY,title.position = "top"),
                    color=guide_legend(title.position = "top",title = colorBY),
                    size=guide_legend(title.position = "top",title = sizeBY))+
@@ -218,4 +242,93 @@ plotAnyPC <- function(computedPCA,x,y, shapeBY=NULL, colorBY=NULL, sizeBY=NULL, 
             ggtitle(paste("Top ",nrow(computedPCA$original) ," variable genes"))+
             labs(x=paste(pc_x,pct[1]),y=paste(pc_y,pct[2]))+
             theme_bw())
+}
+
+
+#' Title
+#'
+#' @param computedPCA
+#' @param x
+#' @param y
+#' @param shapeBY
+#' @param colorBY
+#' @param sizeBY
+#' @param labelBY
+#' @param genes
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' @importFrom ggplot2 ggplot aes_string geom_point guide_legend guides guide_legend scale_shape_manual ggtitle labs theme_bw sym
+biplotAnyPC <- function(computedPCA,x,y, shapeBY=NULL, colorBY=NULL, sizeBY=NULL, labelBY=NULL,
+                        genes=NULL, genesLabel = NULL){
+    pc_x = paste("PC",x,sep = "")
+    pc_y = paste("PC",y,sep = "")
+    pct <- computedPCA$eigen_values %>%
+        dplyr::filter(PC %in% c(pc_x,pc_y)) %>%
+        dplyr::pull(var_pct) %>%
+        round(digits = 4) *100
+    if(!is.null(shapeBY)){
+        computedPCA$pc_scores[,shapeBY] <- factor(computedPCA$pc_scores[,shapeBY])
+    }
+
+    if(is.null(genes)){
+        pc1_genes <- computedPCA$loadings %>%
+            filter(!!sym(pc_x) == max(!!sym(pc_x)) | !!sym(pc_x) == min(!!sym(pc_x))) %>% pull(gene)
+        pc2_genes <- computedPCA$loadings %>%
+            filter(!!sym(pc_y) == max(!!sym(pc_y)) | !!sym(pc_y) == min(!!sym(pc_y))) %>% pull(gene)
+        genes <- c(pc1_genes,pc2_genes)
+    }
+    dA <- computedPCA$loadings[genes,] %>%
+        select(!!sym(pc_x),!!sym(pc_y), !!sym(genesLabel)) %>%
+        mutate_if( is.numeric, ~ . * 100)
+
+    return(
+        computedPCA$pc_scores %>%
+            ggplot()+
+            geom_point(aes_string(pc_x,pc_y,
+                                  text=labelBY,
+                                  shape=shapeBY,
+                                  color=colorBY,
+                                  size=sizeBY))+ coord_equal() +
+            geom_segment(data=dA, aes(x=0, y=0,xend=!!sym(pc_x), yend=!!sym(pc_y)), size = 1,
+                         arrow=arrow(length=unit(0.2,"cm")), alpha=0.75, color="red")+
+            geom_text(data=dA, aes(x=!!sym(pc_x), y=!!sym(pc_y),label= !!sym(genesLabel)),
+                      size = 3, vjust=1, color="blue")+
+            guides(shape=guide_legend(title = shapeBY,title.position = "top"),
+                   color=guide_legend(title.position = "top",title = colorBY),
+                   size=guide_legend(title.position = "top",title = sizeBY))+
+            scale_shape_manual(values=1:nlevels(computedPCA$pc_scores[,shapeBY]))+
+            ggtitle(paste("Top ",nrow(computedPCA$original) ," variable genes"))+
+            labs(x=paste(pc_x,pct[1]),y=paste(pc_y,pct[2]))+
+            theme_bw())
+}
+
+extract_topGeneLoadings <- function(loadings,whichpc,topN,keep){
+    geneloadings_sorted <- dplyr::arrange(loadings, desc(abs( !!sym(whichpc)))) %>%
+        dplyr::select(all_of(keep), dplyr::all_of(whichpc))
+    geneloadings_extreme <- geneloadings_sorted %>% dplyr::slice(1:topN)#, with_ties = FALSE)
+    colnames(geneloadings_extreme) <- c(dplyr::all_of(keep), "loading")
+    geneloadings_extreme$PC <- whichpc
+    geneloadings_extreme$Rank <- 1:topN
+    return(geneloadings_extreme)
+}
+
+#' Title
+#'
+#' @param computedPCA
+#' @param pcs
+#' @param topN
+#' @param keep
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getFeatureLoadRanking <- function(computedPCA, pcs=1:5, topN = 10,
+                                  keep = c("symbol","gene_biotype","seq_name","Class")){
+    plyr::ldply(paste("PC",1:10,sep = ""), .fun = extract_topGeneLoadings,
+                loadings = computedPCA$loadings,
+                topN = topN,keep = keep)
 }

@@ -9,7 +9,8 @@ plotHeatmapCluster(
   scaledAssay = "vst",
   ntop = 500L,
   genes = NULL,
-  annotation_col = c("")
+  annotation_col = c(""),
+  ...
 )
 }
 \arguments{

@@ -25,17 +25,15 @@ checkNameSpace <- function(packageName) {
 #'
 #' @return
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_boxplot geom_jitter facet_wrap
+#' @importFrom ggpubr ggboxplot facet
 #' @examples
-genes_plot <- function(smrExpt, features,x_factor,y_value){
+genes_plot <- function(smrExpt, features,...){
     checkNameSpace("sechm")
-    checkNameSpace("ggplot2")
+    checkNameSpace("ggpubr")
 
     d <- sechm::meltSE(smrExpt,features )
-    ggplot2::ggplot(d, aes(.data[[x_factor]], .data[[y_value]], fill=.data[[x_factor]])) +
-        geom_boxplot() +
-        geom_jitter()+
-        facet_wrap(~feature, scale="free")
+    d %>% ggboxplot( ... ) %>%
+        facet(facet.by = "feature", scale="free")
 }
 
 rnaSeq_rank <- function(Methods_list){
@@ -60,4 +58,18 @@ rnaSeq_rank <- function(Methods_list){
     return(combined_r)
 }
 
+#' Applies round function on numeric columns of a dataframe.
+#'
+#' @param df
+#' @param digits
+#'
+#' @return
+#' @export
+#'
+#' @examples
+round_df <- function(df, digits) {
+    nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
+    df[,nums] <- round(df[,nums], digits = digits)
+    (df)
+}
 

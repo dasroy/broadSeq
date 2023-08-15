@@ -14,7 +14,7 @@ normalizeEdgerCPM <- function(se, normLibSizes.method="TMM",cpm.log = TRUE, ...)
     stopifnot(is(se, "SummarizedExperiment"))
     x<- normLibSizes(se,method=normLibSizes.method,...)
     x<- cpm(x,log=cpm.log)
-    assay_name <- ifelse(cpm.log,"log","")
+    assay_name <- ifelse(cpm.log,"log","") #if_else is better to handle na values
     assay_name <- paste(assay_name,
                         ifelse(normLibSizes.method != "none",
                                normLibSizes.method,
@@ -36,7 +36,9 @@ normalizeEdgerCPM <- function(se, normLibSizes.method="TMM",cpm.log = TRUE, ...)
 #' @examples
 transformDESeq2 <- function(se, method="vst", ...){
     stopifnot(is(se, "SummarizedExperiment"))
-    stopifnot("method must be either vst or rlog"= (method %in% c("vst", "rlog")))
+    stopifnot("method must be either vst or rlog"= (method %in% c("vst", "rlog","normTransform")))
+    warning("For length correction assayname must match with avgTxLength\n ")
+    ## Should be checked
     # Need to convert to DESeqDataSet first from SummarizedExperiment object where 'counts' assay should be the first in assays list
     if (SummarizedExperiment::assayNames(se)[1] != "counts") {
         nuOrder <-
@@ -53,9 +55,11 @@ transformDESeq2 <- function(se, method="vst", ...){
     }
     x <- DESeqDataSet(se, design = ~ 1)
     if (method == "rlog") {
-        rd <- rlog(x)
-    } else{
+        rd <- rlog(x,...)
+    } else if(method == "vst"){
         rd <- varianceStabilizingTransformation(x, ...)
+    }else if(method == "normTransform"){
+        rd <- normTransform(x, ...)
     }
     assays(se)[[method]] <- assay(rd)
     return(se)

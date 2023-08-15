@@ -4,16 +4,7 @@
 \alias{plot_MDS}
 \title{Title}
 \usage{
-plot_MDS(
-  se,
-  scaledAssay = "vst",
-  ntop = 500L,
-  genes = NULL,
-  shapeBY = NULL,
-  colorBY = NULL,
-  sizeBY = NULL,
-  labelBY = NULL
-)
+plot_MDS(se, scaledAssay = "vst", ntop = 500L, genes = NULL, ...)
 }
 \arguments{
 \item{...}{}
