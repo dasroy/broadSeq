@@ -65,7 +65,7 @@ plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,...){
 
 
 #' Perform Principal Components Analysis on a DESeqTransform object
-#' [reused code from https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906]
+#' [reused code](https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906)
 #'
 #' This function is based on the `DESeq2::plotPCA()` function, but returns the
 #' results of `prcomp` in a tidy list format. This is more flexible for further

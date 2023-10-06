@@ -499,7 +499,7 @@ use_multDE <- function(deFun_list, return.df= FALSE ,smrExpt , class_id , contro
         message(paste("Now executing >> ",f))
         deFun_list[[f]](... )
     }
-    SummarizedExperiment::colData(smrExpt)[,class_id] %>% summary()
+    SummarizedExperiment::colData(smrExpt)[,class_id] %>% summary() %>% message()
 
     y <- lapply(names(deFun_list), wrap_it, smrExpt = smrExpt, class_id = class_id,
                 control = control, treatment = treatment, ...)

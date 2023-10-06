@@ -3,7 +3,7 @@
 \name{prcompTidy}
 \alias{prcompTidy}
 \title{Perform Principal Components Analysis on a DESeqTransform object
-\link{reused code from https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906}}
+\href{https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906}{reused code}}
 \usage{
 prcompTidy(se, scaledAssay = "vst", ntop = 500L, genes = NULL, ...)
 }

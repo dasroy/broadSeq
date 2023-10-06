@@ -1,6 +1,6 @@
 Package: broadSeq
 Title: The user can try different methods easily for RNA-seq data analysis.
-Version: 0.0.5
+Version: 0.0.6
 Authors@R: 
     person("Rishi", "Das Roy", , "rishi.dasroy@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3276-7279"))

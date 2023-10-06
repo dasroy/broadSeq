@@ -4,10 +4,10 @@
 \alias{genes_plot}
 \title{Title}
 \usage{
-genes_plot(smrExpt, features, ...)
+genes_plot(smrExpt, features, facet.by = "feature", ...)
 }
 \arguments{
-\item{y_value}{}
+\item{y}{facet.by must be one of the column names of rowData(smrExpt). default "feature" which is equivalent to rownames of rowData}
 }
 \description{
 Title

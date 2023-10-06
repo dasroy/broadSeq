@@ -20,20 +20,48 @@ checkNameSpace <- function(packageName) {
 #'
 #' @param smrExpt
 #' @param features
-#' @param x_factor
-#' @param y_value
+#' @param x
+#' @param y
+#' facet.by must be one of the column names of rowData(smrExpt). default "feature" which is equivalent to rownames of rowData
 #'
 #' @return
 #' @export
 #' @importFrom ggpubr ggboxplot facet
 #' @examples
-genes_plot <- function(smrExpt, features,...){
+genes_plot <- function(smrExpt, features,facet.by = "feature",...){
     checkNameSpace("sechm")
     checkNameSpace("ggpubr")
 
     d <- sechm::meltSE(smrExpt,features )
     d %>% ggboxplot( ... ) %>%
-        facet(facet.by = "feature", scale="free")
+        facet(facet.by , scale="free")
+}
+
+#' Title
+#'
+#' @param smrExpt
+#' @param feature
+#' @param assays
+#' @param x
+#' @param y
+#'
+#' @return
+#' @export
+#' @importFrom ggpubr ggboxplot facet
+#' @examples
+assay_plot <- function(smrExpt, feature,assays,...){
+    checkNameSpace("sechm")
+    checkNameSpace("ggpubr")
+
+    d <- sechm::meltSE(smrExpt,features = feature,assayName = assays )
+
+    listPlot <- list()
+    for(i in 1:length(assays)){
+        listPlot[[i]] <- d %>% ggboxplot( y=assays[i],...)
+    }
+
+    ggarrange(plotlist = listPlot,common.legend = TRUE, legend =  "bottom") %>%
+        annotate_figure(top = text_grob(feature, color = "red", face = "bold", size = 14))
 }
 
 rnaSeq_rank <- function(Methods_list){
