@@ -35,6 +35,6 @@ Imports:
     sechm (>= 1.6.0),
     edgeR (>= 3.40.1)
 Remotes:  
-    bioc::3.18/sechm (>= 1.6.0),
+    bioc::3.18/sechm,
     bioc::3.18/genefilter
 VignetteBuilder: knitr
