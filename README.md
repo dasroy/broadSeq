@@ -14,9 +14,8 @@ package will give user freedom to develop customized and reproducible
 workflow. Additionally, it will also help to quickly evaluate different
 methods easily.
 
-<img src="man/figures/README-unnamed-chunk-1-1.png" width="100%" />
-
-##### This is under active development. Please report if you find any bug.
+![](man/figures/README-unnamed-chunk-1-1.png) \##### This is under
+active development. Please report if you find any bug.
 
 ## Installation
 

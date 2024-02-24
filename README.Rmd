@@ -34,7 +34,7 @@ and will get results from different methods. This function oriented package will
 give user freedom to develop customized and reproducible workflow. Additionally,
 it will also help to quickly evaluate different methods easily.
 
-```{r  echo=FALSE,message=FALSE,warning=FALSE}
+```{r  echo=FALSE,message=FALSE,warning=FALSE,eval=FALSE}
 io_flow <- read.csv(system.file("extdata", "broadSeq_pipeline.csv", package = "broadSeq"))
 
 df <- io_flow %>% 
@@ -59,6 +59,7 @@ pl <- pl + ggsankey::geom_sankey_label(show.legend = FALSE,
 pl+labs(x="")+ ggsankey::theme_sankey(base_size = 25)
 ```
 
+![](man/figures/README-unnamed-chunk-1-1.png)
 ##### This is under active development. Please report if you find any bug.
 
 ## Installation
