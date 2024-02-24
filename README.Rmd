@@ -34,7 +34,7 @@ and will get results from different methods. This function oriented package will
 give user freedom to develop customized and reproducible workflow. Additionally,
 it will also help to quickly evaluate different methods easily.
 
-```{r  echo=FALSE,message=FALSE,warning=FALSE,eval=FALSE}
+```{r  echo=FALSE,message=FALSE,warning=FALSE}
 io_flow <- read.csv(system.file("extdata", "broadSeq_pipeline.csv", package = "broadSeq"))
 
 df <- io_flow %>% 
