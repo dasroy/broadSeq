@@ -13,26 +13,28 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Suggests: 
-    baySeq (>= 2.31.0),
-    DESeq2 (>= 1.38.2),
     EBSeq (>= 1.38.0),
-    edgeR (>= 3.40.1),
     knitr,
     limma (>= 3.54.0),
     purrr (>= 0.3.5),
     rmarkdown,
-    stats (>= 4.2.2),
-    clusterProfiler (>= 4.8.2),
-    pheatmap
+    stats (>= 4.2.2)
 Depends: 
     dplyr,
     SummarizedExperiment 
 Imports: 
+    DESeq2 (>= 1.38.2),
     forcats (>= 1.0.0),
     genefilter,
     ggplot2,
     ggplotify,
     ggpubr,
     plyr,
-    sechm (>= 1.6.0)
+    clusterProfiler (>= 4.8.2),
+    pheatmap,
+    sechm (>= 1.6.0),
+    edgeR (>= 3.40.1)
+Remotes:  
+    bioc::3.18/sechm (>= 1.6.0),
+    bioc::3.18/genefilter
 VignetteBuilder: knitr
