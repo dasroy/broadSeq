@@ -60,6 +60,7 @@ pl+labs(x="")+ ggsankey::theme_sankey(base_size = 25)
 ```
 
 ![](man/figures/README-unnamed-chunk-1-1.png)
+  
 ##### This is under active development. Please report if you find any bug.
 
 ## Installation
