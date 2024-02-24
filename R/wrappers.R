@@ -281,58 +281,7 @@ use_DELocal <- function(smrExpt, class_id, control, treatment,rank=FALSE,...){
     }
 }
 
-#' Title
-#'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
-#' @param baySeq.group
-#' @param baySeq.FDR
-#'
-#' @return
-#' @export
-#' @importFrom dplyr %>% left_join
-#' @examples
-use_baySeq <- function(smrExpt, class_id, control, treatment,rank=FALSE,
-                       baySeq.group="DE",baySeq.FDR=1, ...){
-    checkNameSpace("baySeq")
 
-    ##Combine count data and models
-    control_names <- smrExpt[,smrExpt[[class_id]]==control] %>% colnames()
-    treatment_names <- smrExpt[,smrExpt[[class_id]]==treatment] %>% colnames()
-
-    groups_bay <- list(NDE=c(rep(1,length(control_names)+length(treatment_names))),
-                       DE=c(rep(1,length(control_names)),rep(2,length(treatment_names))))
-
-    CD <- new("countData", data = SummarizedExperiment::assays(smrExpt)[["counts"]] ,
-              replicates = c(rep(control,length(control_names)),rep(treatment,length(treatment_names))),
-              groups = groups_bay)
-    CD@annotation <- SummarizedExperiment::rowData(smrExpt) %>% as.data.frame()
-    CD@annotation$name <- rownames(CD@annotation)
-
-    ##Infer library size from data
-    baySeq::libsizes(CD) <- baySeq::getLibsizes(CD)
-    ## What is the other approach
-    ##Negative Binomial Approach
-    ##Estimate parameters
-    ## quasi-likelihood estimation of priors ##
-    CD1 <- baySeq::getPriors.NB(CD,cl=NULL)
-    ##Estimate proportions of DE counts
-    CD1 <- baySeq::getLikelihoods(CD1,bootStraps=3,verbose=FALSE)
-
-    if(rank){
-        baySeq::topCounts(CD1, group=baySeq.group, FDR=baySeq.FDR, ...) %>%
-            dplyr::select(likes:FWER.DE) %>%
-            dplyr::arrange(FDR.DE) %>%
-            dplyr::mutate(rank = 1:dplyr::n())
-    }else{
-        baySeq::topCounts(CD1, group=baySeq.group, FDR=baySeq.FDR, ...) %>%
-            dplyr::select(likes:FWER.DE)
-    }
-}
 
 #' Title
 #'
