@@ -17,7 +17,8 @@ Suggests:
     limma (>= 3.54.0),
     purrr (>= 0.3.5),
     rmarkdown,
-    stats (>= 4.2.2)
+    stats (>= 4.2.2),
+    samr
 Depends: 
     dplyr,
     SummarizedExperiment 
@@ -34,8 +35,7 @@ Imports:
     clusterProfiler (>= 4.8.2),
     pheatmap,
     sechm (>= 1.6.0),
-    edgeR (>= 3.40.1),
-    samr
+    edgeR (>= 3.40.1)
 Remotes:  
     bioc::3.18/SummarizedExperiment,
     bioc::3.18/sechm,
