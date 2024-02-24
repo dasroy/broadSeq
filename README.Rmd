@@ -1,0 +1,73 @@
+---
+output: github_document
+bibliography: reference.bib 
+csl: annual-review-of-cell-and-developmental-biology.csl
+link-citations: TRUE
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, setup,include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+library(dplyr)
+require(ggplot2)
+```
+
+# broadSeq 
+
+<!-- badges: start -->
+
+<!-- badges: end -->
+
+The goal of broadSeq is to do easily RNA-seq data analysis with multiple
+methods (usually which needs many different input formats). Here the
+user will provide the expression data as a SummarizedExperiment object
+and will get results from different methods. This function oriented package will
+give user freedom to develop customized and reproducible workflow. Additionally,
+it will also help to quickly evaluate different methods easily.
+
+```{r  echo=FALSE,message=FALSE,warning=FALSE}
+io_flow <- read.csv(system.file("extdata", "broadSeq_pipeline.csv", package = "broadSeq"))
+
+df <- io_flow %>% 
+    ggsankey::make_long(Input,  Function, Method, Output,ggpubr)
+df$node <- factor(df$node, levels = unique(c( io_flow$Function, io_flow$Method,
+                                           io_flow$Output, io_flow$ggpubr)))
+
+pl <- ggplot(df, aes(x = x,                        
+                     next_x = next_x,                                     
+                     node = node,
+                     next_node = next_node,        
+                     fill = factor(node),
+                     label = node))+scale_x_discrete(position = "top") 
+
+pl <- pl + ggsankey::geom_sankey(flow.alpha = 0.5,  #This Creates the transparency of your node 
+                      show.legend = FALSE)      # This determines if you want your legend to show
+
+pl <- pl + ggsankey::geom_sankey_label(show.legend = FALSE,
+                             color = "black", 
+                             fill = "white") # This specifies the Label format for each node 
+
+pl+labs(x="")+ ggsankey::theme_sankey(base_size = 25)
+```
+
+##### This is under active development. Please report if you find any bug.
+
+## Installation
+
+You can install the development version of broadSeq from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("dasroy/broadSeq")
+```
+
