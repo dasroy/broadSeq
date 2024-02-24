@@ -1,5 +1,5 @@
 
-#' Title
+#' plotHeatmapCluster integrates SummarizedExperiment with pheatmap and return object as ggplot
 #'
 #' @param se
 #' @param scaledAssay
@@ -10,23 +10,53 @@
 #' @return
 #' @export
 #' @import pheatmap
+#' @importFrom ggplotify as.ggplot
 #'
 #' @examples
-plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,
-                               annotation_col=c(""),...){
+plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,show_geneAs = NULL,
+                               annotation_col=NA,annotation_row=NA,...){
     stopifnot(is(se, "SummarizedExperiment"))
     stopifnot("scaledAssay must be an assay of se"= (scaledAssay %in% assayNames(se)))
-    stopifnot(
-        "annotation_col must be a subset of colnames of colData(se)"= (annotation_col %in% colnames(colData(se)))
-        )
+
     selected_genes <- getSelectedGene(genes, se, ntop, scaledAssay)
 
     dottedArg <- list( ...)
     if(is.null(dottedArg$main) ) main = paste("Top ",length(selected_genes) ," variable genes")
-    df <- as.data.frame(colData(se)[,annotation_col])
-    p<-pheatmap(assays(se)[[scaledAssay]][selected_genes,],
-             annotation_col=df,...)
-    return(p)
+
+    data_mat <- assays(se)[[scaledAssay]][selected_genes,]
+    if(is.na2(annotation_col) == FALSE){
+        stopifnot(
+            "annotation_col must be a subset of colnames of colData(se)"= ( (annotation_col %in% colnames(colData(se))))
+        )
+        df <- as.data.frame(colData(se)[,annotation_col])
+        colnames(df) <- annotation_col
+        rownames(df) <- colnames(se)
+        annotation_col <- df
+    }
+
+    if(is.na2(annotation_row) == FALSE){
+        stopifnot(
+            "annotation_row must be a subset of colnames of rowData(se)"= ( (annotation_row %in% colnames(rowData(se))))
+        )
+        df <- rowData(se)[selected_genes,] %>% as.data.frame()  %>% select(all_of(annotation_row))
+        colnames(df) <- annotation_row
+        annotation_row <- df
+    }
+
+    if(!is.null(show_geneAs)){
+        stopifnot(
+            "show_geneAs must be a subset of colnames of rowData(se)"= ( (show_geneAs %in% colnames(rowData(se))))
+        )
+        gene_name <- rowData(se)[selected_genes,] %>% as.data.frame()  %>% select(all_of(show_geneAs))
+        rownames(data_mat) <- gene_name[rownames(data_mat),]
+        if(is.data.frame(annotation_row)){
+             rownames(annotation_row) <- gene_name[rownames(annotation_row),]
+        }
+    }
+
+    p<-pheatmap(data_mat,
+             annotation_col=annotation_col,annotation_row=annotation_row,...)
+    return(as.ggplot(p))
 }
 #' Title
 #'
@@ -155,11 +185,11 @@ prcompTidy <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL, ...){
 #' @examples
 getSelectedGene <- function(genes, se, ntop, scaledAssay) {
     if(!is.null(genes)){
-        message("Only using ", genes, " genes as requested.")
+        message("Only using ", length(genes), " genes as requested.")
 
         if(!all(genes %in% rownames(se))) stop("Not all provided genes are in the gene count matrix.")
 
-        selected_genes <- which(genes %in% rownames(se))
+        selected_genes <- genes # which(genes %in% rownames(se))
     } else if(is.numeric(ntop) & ntop < nrow(se)){
         ntop <- round(ntop)
         message("Only using ", ntop, " most variable genes.")

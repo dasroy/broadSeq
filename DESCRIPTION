@@ -1,6 +1,6 @@
 Package: broadSeq
 Title: The user can try different methods easily for RNA-seq data analysis.
-Version: 0.0.6
+Version: 0.0.7
 Authors@R: 
     person("Rishi", "Das Roy", , "rishi.dasroy@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3276-7279"))
@@ -21,7 +21,9 @@ Suggests:
     limma (>= 3.54.0),
     purrr (>= 0.3.5),
     rmarkdown,
-    stats (>= 4.2.2)
+    stats (>= 4.2.2),
+    clusterProfiler (>= 4.8.2),
+    pheatmap
 Depends: 
     dplyr,
     SummarizedExperiment 
@@ -29,6 +31,7 @@ Imports:
     forcats (>= 1.0.0),
     genefilter,
     ggplot2,
+    ggplotify,
     ggpubr,
     plyr,
     sechm (>= 1.6.0)

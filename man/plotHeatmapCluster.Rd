@@ -2,14 +2,16 @@
 % Please edit documentation in R/clusteringVisualization.R
 \name{plotHeatmapCluster}
 \alias{plotHeatmapCluster}
-\title{Title}
+\title{plotHeatmapCluster integrates SummarizedExperiment with pheatmap and return object as ggplot}
 \usage{
 plotHeatmapCluster(
   se,
   scaledAssay = "vst",
   ntop = 500L,
   genes = NULL,
-  annotation_col = c(""),
+  show_geneAs = NULL,
+  annotation_col = NA,
+  annotation_row = NA,
   ...
 )
 }
@@ -17,5 +19,5 @@ plotHeatmapCluster(
 \item{annotation_col}{a character vector of colnames of colData(se)}
 }
 \description{
-Title
+plotHeatmapCluster integrates SummarizedExperiment with pheatmap and return object as ggplot
 }
