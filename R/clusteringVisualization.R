@@ -318,7 +318,9 @@ extract_topGeneLoadings <- function(loadings,whichpc,topN,keep){
 #' @examples
 getFeatureLoadRanking <- function(computedPCA, pcs=1:5, topN = 10,
                                   keep = c("symbol","gene_biotype","seq_name","Class")){
-    plyr::ldply(paste("PC",1:10,sep = ""), .fun = extract_topGeneLoadings,
+    x <- plyr::ldply(paste("PC",pcs,sep = ""), .fun = extract_topGeneLoadings,
                 loadings = computedPCA$loadings,
                 topN = topN,keep = keep)
+    x$PC <- x$PC %>% factor(levels =  paste("PC",1:10,sep = ""))
+    return(x)
 }
