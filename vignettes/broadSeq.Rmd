@@ -1,0 +1,24 @@
+---
+title: "Introduction to broadSeq"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to broadSeq}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, include = FALSE}
+library(broadSeq)
+```
+
+
+```{r out.width = '70%', echo = FALSE}
+knitr::include_graphics("img/braodSeq.png")
+```
