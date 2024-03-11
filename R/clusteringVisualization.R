@@ -82,8 +82,8 @@ plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,...){
     sampleDistMatrix <- as.matrix( sampleDists )
     mds <- data.frame(cmdscale(sampleDistMatrix))
     mds <- cbind(mds, colData(se))
-    dottedArg <- list( ...)
-    if(!is.null(dottedArg$shape) ) mds[,dottedArg$shape] <- factor(mds[,dottedArg$shape])
+    # dottedArg <- list( ...)
+    # if(!is.null(dottedArg$shape) ) mds[,dottedArg$shape] <- factor(mds[,dottedArg$shape])
 
     return(mds %>%
                ggscatter(

@@ -21,6 +21,7 @@ Suggests:
     samr
 Depends: 
     dplyr,
+    ggpubr,
     SummarizedExperiment 
 Imports: 
     EBSeq (>= 1.38.0),
@@ -30,7 +31,6 @@ Imports:
     genefilter,
     ggplot2,
     ggplotify,
-    ggpubr,
     plyr,
     clusterProfiler (>= 4.8.2),
     pheatmap,

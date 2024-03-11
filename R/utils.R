@@ -24,7 +24,7 @@ checkNameSpace <- function(packageName) {
 #'
 #' @return
 #' @export
-#' @importFrom ggpubr ggboxplot
+#' @importFrom ggpubr ggboxplot rotate_x_text
 #' @importFrom sechm meltSE
 #' @importFrom SummarizedExperiment assayNames
 #' @examples
@@ -73,7 +73,7 @@ genes_plot <- function(smrExpt, features,facet.by = "feature",...){
 #'
 #' @return
 #' @export
-#' @importFrom ggpubr ggboxplot facet
+#' @importFrom ggpubr ggboxplot facet annotate_figure
 #' @examples
 assay_plot <- function(smrExpt, feature,assays,...){
     checkNameSpace("sechm")
