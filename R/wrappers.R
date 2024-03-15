@@ -206,7 +206,8 @@ use_edgeR <- function(smrExpt, class_id, control, treatment, rank=FALSE,
         ##Compare groups (exact test)
         t12 <- edgeR::exactTest(d1, pair=c(1,2))
     }
-    res <- edgeR::topTags(t12, n=edgeR.n, sort.by = edgeR.sort.by , adjust.method = edgeR.adjust.method,
+    res <- edgeR::topTags(t12, n=edgeR.n, sort.by = edgeR.sort.by ,
+                          adjust.method = edgeR.adjust.method,
                           ...) %>% as.data.frame()
     if(rank){
         return(res %>% dplyr::select(logFC:FDR)%>%
@@ -324,24 +325,30 @@ use_EBSeq <- function(smrExpt, class_id, control, treatment, rank=FALSE,...){
 }
 
 
-#' We can use as(smrExpt, "ExpressionSet") to get an eSet easily but
-#' then it will be hard to refer the treatment and control. The order
-#' of expt_factors influence the log fold change sign. To keep it
-#' comparable to other methods the expt_factors is used.
+#' Differential expression method for NOISeq
 #'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
+#' This is a wrapper function of NOISeq::\code{\link{noiseqbio}} whose input class is ´eSet´
+#' and output class is `Output` which are not widely used. We can use as(smrExpt, "ExpressionSet")
+#' to get an eSet easily but then it will be hard to refer the treatment and control.
+#' The order of factors influence the log fold change sign. To keep it comparable
+#' to other methods the `NOISeq::readData()` is used internally.
 #'
-#' @return
+#' @param smrExpt Object of \code{\link{SummarizedExperiment}} class
+#' @param class_id One of the columns of colData(smrExpt). It should be factors of more than one value.
+#' @param control Base level and one of the factor values of `colData(smrExpt)[["condition"]]`
+#' @param treatment one of the factor values of `colData(smrExpt)[["condition"]]`
+#' @param rank Logical value default FALSE. If true the result will have an
+#' additional column named "rank" which is ordered by ´prob´ values returned by
+#' function NOISeq::\code{\link{noiseqbio}}.
+#' @param ...  other arguments to be passed to main function NOISeq::\code{\link{noiseqbio}}.
+#' The 'input' and 'factor' argument should not be used.
+#'
+#' @return A data.frame object from the "NOISeq::noiseqbio()@results[[1]]". For details check
+#' the documentation of ´NOISeq´
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
 use_NOIseq <- function(smrExpt, class_id, control, treatment, rank=FALSE, ...){
-    checkNameSpace("NOISeq")
     control_names <- smrExpt[,smrExpt[[class_id]]==control] %>% colnames()
     treatment_names <- smrExpt[,smrExpt[[class_id]]==treatment] %>% colnames()
     tabla <- SummarizedExperiment::assays(smrExpt)[["counts"]][,c(control_names,treatment_names)] %>% as.data.frame()
@@ -353,13 +360,8 @@ use_NOIseq <- function(smrExpt, class_id, control, treatment, rank=FALSE, ...){
     colnames(expt_factors) <- class_id
     expt_data <- NOISeq::readData(data = tabla, factors = expt_factors)
 
-    ##Differential expression
     ##Available normalization methods: norm = "rpkm", "uqua", "tmm2, "none"
-    expt_noiseqbio = NOISeq::noiseqbio(expt_data, k = 0.5, norm = "rpkm", nclust = 15, plot = FALSE,
-                            factor=class_id, # conditions
-                            lc = 0, r = 50, adj = 1.5,
-                            a0per = 0.9, random.seed = 12345, filter = 0, depth = NULL,
-                            cv.cutoff = NULL, cpm = NULL)
+    expt_noiseqbio = NOISeq::noiseqbio(input= expt_data, factor=class_id, ...)
 
     if(rank){
         expt_noiseqbio@results[[1]] %>%
@@ -392,6 +394,7 @@ use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
                  rep(treatment,length(treatment_names))),
                levels = c(control,treatment))
 
+    # it uses cat() for lots of text, annoying
     samfit <- samr::SAMseq(tabla, y, resp.type = "Two class unpaired",
                            geneid = rownames(tabla), genenames = rownames(tabla),
                            random.seed=1, fdr.output = 1)
@@ -447,11 +450,13 @@ use_multDE <- function(deFun_list, return.df= FALSE ,smrExpt , class_id , contro
     wrap_it <- function( f, ...) {
         message(paste("Now executing >> ",f))
         deFun_list[[f]](... )
+        message("")
     }
-    SummarizedExperiment::colData(smrExpt)[,class_id] %>% summary() %>% message()
+    SummarizedExperiment::colData(smrExpt)[,class_id] %>% summary() #%>% message()
 
     y <- lapply(names(deFun_list), wrap_it, smrExpt = smrExpt, class_id = class_id,
                 control = control, treatment = treatment, ...)
+
     named_result <- list()
     for (i in 1:length(y)) {
         named_result[[names(deFun_list)[i]]] <- y[[i]]

@@ -2,19 +2,34 @@
 % Please edit documentation in R/wrappers.R
 \name{use_NOIseq}
 \alias{use_NOIseq}
-\title{We can use as(smrExpt, "ExpressionSet") to get an eSet easily but
-then it will be hard to refer the treatment and control. The order
-of expt_factors influence the log fold change sign. To keep it
-comparable to other methods the expt_factors is used.}
+\title{Differential expression method for NOISeq}
 \usage{
 use_NOIseq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
 }
 \arguments{
-\item{...}{}
+\item{smrExpt}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{class_id}{One of the columns of colData(smrExpt). It should be factors of more than one value.}
+
+\item{control}{Base level and one of the factor values of \code{colData(smrExpt)[["condition"]]}}
+
+\item{treatment}{one of the factor values of \code{colData(smrExpt)[["condition"]]}}
+
+\item{rank}{Logical value default FALSE. If true the result will have an
+additional column named "rank" which is ordered by ´prob´ values returned by
+function NOISeq::\code{\link{noiseqbio}}.}
+
+\item{...}{other arguments to be passed to main function \code{\link{noiseqbio}}.
+The 'input' and 'factor' argument should not be used.}
+}
+\value{
+A data.frame object from the "NOISeq::noiseqbio()@results[\link{1}]". For details check
+the documentation of ´NOISeq´
 }
 \description{
-We can use as(smrExpt, "ExpressionSet") to get an eSet easily but
-then it will be hard to refer the treatment and control. The order
-of expt_factors influence the log fold change sign. To keep it
-comparable to other methods the expt_factors is used.
+This is a wrapper function of NOISeq::\code{\link{noiseqbio}} whose input class is ´eSet´
+and output class is \code{Output} which are not widely used. We can use as(smrExpt, "ExpressionSet")
+to get an eSet easily but then it will be hard to refer the treatment and control.
+The order of factors influence the log fold change sign. To keep it comparable
+to other methods the \code{NOISeq::readData()} is used internally.
 }
