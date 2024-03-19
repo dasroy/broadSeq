@@ -185,7 +185,7 @@ funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
              edgeR_exact = use_edgeR_exact, edgeR_glm = use_edgeR_GLM,
              deseq2 = use_deseq2, 
              DELocal = use_DELocal, noiseq = use_NOIseq, 
-             EBSeq = use_EBSeq, samseq = use_SAMseq) 
+             EBSeq = use_EBSeq) 
 
 
 multi_result <- broadSeq::use_multDE(

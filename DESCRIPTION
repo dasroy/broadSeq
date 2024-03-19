@@ -36,8 +36,7 @@ Imports:
     clusterProfiler (>= 4.8.2),
     pheatmap,
     sechm (>= 1.6.0),
-    edgeR (>= 3.40.1),
-    samr
+    edgeR (>= 3.40.1)
 Remotes:  
     bioc::3.18/SummarizedExperiment,
     bioc::3.18/sechm,

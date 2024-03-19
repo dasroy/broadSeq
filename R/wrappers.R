@@ -392,7 +392,8 @@ use_NOIseq <- function(smrExpt, class_id, control, treatment, rank=FALSE, ...){
     }
 }
 
-#' Title
+#' samr package is not installable as package 'impute' is not available. Please
+#' install this package manually before using this.
 #'
 #' @param smrExpt
 #' @param class_id
