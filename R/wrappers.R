@@ -72,6 +72,8 @@ use_limma <- function(smrExpt, class_id, control, treatment,
                       ...) {
     checkNameSpace("limma")
     checkNameSpace("edgeR")
+    smrExpt <- smrExpt[,smrExpt[[class_id]] %in% c(control,treatment)]
+    # dim(smrExpt)
     condition <- factor(as.character(SummarizedExperiment::colData(smrExpt)[,class_id]),
                         levels = c(control,treatment))
 
@@ -176,6 +178,7 @@ use_edgeR <- function(smrExpt, class_id, control, treatment, rank=FALSE,
                       option="GLM",...){ # "exact"
     checkNameSpace("edgeR")
     stopifnot("option must be either 'GLM' or 'exact'"=(option=="GLM" | option=="exact"))
+    smrExpt <- smrExpt[,smrExpt[[class_id]] %in% c(control,treatment)]
     condition <- factor(as.character(SummarizedExperiment::colData(smrExpt)[,class_id]),
                         levels = c(control,treatment))
 
@@ -232,6 +235,15 @@ use_edgeR <- function(smrExpt, class_id, control, treatment, rank=FALSE,
 #' @examples
  use_deseq2 <- function(smrExpt, class_id, control, treatment,rank=FALSE,...){
     checkNameSpace("DESeq2")
+     if (SummarizedExperiment::assayNames(smrExpt)[1] != "counts") {
+         nuOrder <-
+             c("counts",
+               setdiff(SummarizedExperiment::assayNames(smrExpt), "counts"))
+         SummarizedExperiment::assays(smrExpt) <-
+             SummarizedExperiment::assays(smrExpt)[nuOrder]
+     }
+     smrExpt <- smrExpt[,smrExpt[[class_id]] %in% c(control,treatment)]
+
     formula_str <- paste("formula( ~ ",class_id, ")", sep = "")
     dds <- DESeq2::DESeqDataSet(smrExpt, design = eval(parse(text=formula_str)))
 
@@ -269,6 +281,14 @@ use_edgeR <- function(smrExpt, class_id, control, treatment, rank=FALSE,
 use_DELocal <- function(smrExpt, class_id, control, treatment,rank=FALSE,...){
     checkNameSpace("DELocal")
     formula_str <- paste("formula( ~ ",class_id, ")", sep = "")
+    if (SummarizedExperiment::assayNames(smrExpt)[1] != "counts") {
+        nuOrder <-
+            c("counts",
+              setdiff(SummarizedExperiment::assayNames(smrExpt), "counts"))
+        SummarizedExperiment::assays(smrExpt) <-
+            SummarizedExperiment::assays(smrExpt)[nuOrder]
+    }
+    smrExpt <- smrExpt[,smrExpt[[class_id]] %in% c(control,treatment)]
 
     DELocal_result <- DELocal::DELocal(pSmrExpt = smrExpt, # Genes without neighbours are missing
                               nearest_neighbours = 5,pDesign =eval(parse(text=formula_str)),
@@ -442,6 +462,7 @@ use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
 #' @param treatment
 #' @param ...
 #'
+#' @importFrom purrr reduce
 #' @return
 #' @export
 #'
@@ -449,8 +470,8 @@ use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
 use_multDE <- function(deFun_list, return.df= FALSE ,smrExpt , class_id , control , treatment , ... ) {
     wrap_it <- function( f, ...) {
         message(paste("Now executing >> ",f))
+        message("####")
         deFun_list[[f]](... )
-        message("")
     }
     SummarizedExperiment::colData(smrExpt)[,class_id] %>% summary() #%>% message()
 
