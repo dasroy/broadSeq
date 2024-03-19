@@ -2,7 +2,8 @@
 % Please edit documentation in R/wrappers.R
 \name{use_SAMseq}
 \alias{use_SAMseq}
-\title{Title}
+\title{samr package is not installable as package 'impute' is not available. Please
+install this package manually before using this.}
 \usage{
 use_SAMseq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
 }
@@ -10,5 +11,6 @@ use_SAMseq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
 \item{...}{}
 }
 \description{
-Title
+samr package is not installable as package 'impute' is not available. Please
+install this package manually before using this.
 }

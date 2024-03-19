@@ -11,6 +11,7 @@
 #' @export
 #' @import pheatmap
 #' @importFrom ggplotify as.ggplot
+#' @importFrom dplyr select
 #'
 #' @examples
 plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,show_geneAs = NULL,
@@ -38,7 +39,8 @@ plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,
         stopifnot(
             "annotation_row must be a subset of colnames of rowData(se)"= ( (annotation_row %in% colnames(rowData(se))))
         )
-        df <- rowData(se)[selected_genes,] %>% as.data.frame()  %>% select(all_of(annotation_row))
+        df <- rowData(se)[selected_genes,] %>% as.data.frame()  %>%
+            dplyr::select(all_of(annotation_row))
         colnames(df) <- annotation_row
         annotation_row <- df
     }
@@ -281,8 +283,8 @@ biplotAnyPC <- function(computedPCA,x,y,
         genes <- c(pc1_genes,pc2_genes)
     }
     dA <- computedPCA$loadings[genes,] %>%
-        select(!!sym(pc_x),!!sym(pc_y), !!sym(genesLabel)) %>%
-        mutate_if( is.numeric, ~ . * 100)
+        dplyr::select(!!sym(pc_x),!!sym(pc_y), !!sym(genesLabel)) %>%
+        dplyr::mutate_if( is.numeric, ~ . * 100)
     p <- p +
         geom_segment(data=dA, aes(x=0, y=0,xend=!!sym(pc_x), yend=!!sym(pc_y)), size = 1,
                      arrow=arrow(length=unit(0.2,"cm")), alpha=0.75, color="red")+
