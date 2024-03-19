@@ -24,6 +24,7 @@ Depends:
     ggpubr,
     SummarizedExperiment 
 Imports: 
+    DELocal,
     EBSeq (>= 1.38.0),
     DESeq2 (>= 1.38.2),
     NOISeq,
