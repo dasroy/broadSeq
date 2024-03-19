@@ -44,5 +44,6 @@ Remotes:
     bioc::3.18/EBSeq,
     bioc::3.18/DESeq2,
     bioc::3.18/NOISeq,
+    bioc::3.18/DELocal,
     bioc::3.18/genefilter
 VignetteBuilder: knitr
