@@ -19,7 +19,7 @@ use_NOIseq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
 additional column named "rank" which is ordered by ´prob´ values returned by
 function NOISeq::\code{\link{noiseqbio}}.}
 
-\item{...}{other arguments to be passed to main function \code{\link{noiseqbio}}.
+\item{...}{other arguments to be passed to main function NOISeq::\code{\link{noiseqbio}}.
 The 'input' and 'factor' argument should not be used.}
 }
 \value{
