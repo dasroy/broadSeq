@@ -404,6 +404,7 @@ use_NOIseq <- function(smrExpt, class_id, control, treatment, rank=FALSE, ...){
 #' @return
 #' @export
 #' @importFrom dplyr %>% left_join
+#' @importFrom samr SAMseq
 #' @examples
 use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
     checkNameSpace("samr")
