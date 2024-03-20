@@ -27,6 +27,33 @@ require(ggplot2)
 
 <!-- badges: end -->
 
+```{r echo=FALSE,message=FALSE,warning=FALSE,eval=FALSE}
+# library(emojifont)
+io_flow <- read.csv(system.file("extdata", "Method_io.csv", package = "broadSeq"))
+
+df <- io_flow %>% 
+    ggsankey::make_long(Input, Method, Output)
+
+
+pl <- ggplot(df, aes(x = x,                        
+                     next_x = next_x,                                     
+                     node = node,
+                     next_node = next_node,        
+                     fill = factor(node),
+                     label = node))+scale_x_discrete(position = "top") 
+
+pl <- pl + ggsankey::geom_sankey(flow.alpha = 0.5,          #This Creates the transparency of your node 
+                      node.color = "black",     # This is your node color        
+                      show.legend = FALSE)        # This determines if you want your legend to show
+
+pl <- pl + ggsankey::geom_sankey_label(show.legend = FALSE,
+                             color = "black", 
+                             fill = "white") # This specifies the Label format for each node 
+
+io_p <- pl+labs(x="")+ ggsankey::theme_sankey(base_size = 25)
+io_p
+```
+
 The goal of broadSeq is to do easily RNA-seq data analysis with multiple
 methods (usually which needs many different input formats). Here the
 user will provide the expression data as a SummarizedExperiment object
@@ -53,13 +80,13 @@ pl <- pl + ggsankey::geom_sankey(flow.alpha = 0.5,  #This Creates the transparen
                       show.legend = FALSE)      # This determines if you want your legend to show
 
 pl <- pl + ggsankey::geom_sankey_label(show.legend = FALSE,
-                             color = "black", 
+                             color = "black", size =3 ,
                              fill = "white") # This specifies the Label format for each node 
 
-pl+labs(x="")+ ggsankey::theme_sankey(base_size = 25)
+pl+labs(x="")+ ggsankey::theme_sankey(base_size = 20)
 ```
 
-![](man/figures/README-unnamed-chunk-1-1.png)
+![](man/figures/README-unnamed-chunk-2-1.png)
   
 ##### This is under active development. Please report if you find any bug.
 
@@ -73,3 +100,8 @@ You can install the development version of broadSeq from
 devtools::install_github("dasroy/broadSeq")
 ```
 
+For package documentation 
+``` r
+devtools::install_github("dasroy/broadSeq", build_vignettes = TRUE)
+browseVignettes(package = "broadSeq")
+```
