@@ -2,13 +2,28 @@
 % Please edit documentation in R/wrappers.R
 \name{use_EBSeq}
 \alias{use_EBSeq}
-\title{Title}
+\title{To use SummarizedExperiment with package EBSeq}
 \usage{
-use_EBSeq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
+use_EBSeq(se, colData_id, control, treatment, rank = FALSE, ...)
 }
 \arguments{
-\item{...}{}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{colData_id}{One of the columns of colData(se). It should be factors of
+more than one value.}
+
+\item{control}{Base level and one of the factor values of \code{colData(se)[[colData_id]]}}
+
+\item{treatment}{one of the factor values of \code{colData(se)[[colData_id]]}}
+
+\item{rank}{Logical value default FALSE. If true the result will have an
+additional column named "rank" and the results are ranked on "PPDE"}
+
+\item{...}{other arguments to be passed to main function EBSeq::\code{\link{GetDEResults}}.}
+}
+\value{
+a data.frame object converted from the output of EBSeq::\code{\link{GetDEResults}}.
 }
 \description{
-Title
+A wrapper function of EBSeq where input is an object of \code{\link{SummarizedExperiment}}
 }

@@ -1,37 +1,48 @@
-#' Title
+#' Use of edgeR package to normalize count data
 #'
-#' @param se
-#' @param cpm.log
-#' @param normLibSizes.method "none" ,"TMM"
+#'
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param cpm.log value for edgeR::\code{\link{cpm}} function. default TRUE
+#' @param method value for edgeR::\code{\link{normLibSizes}} function. default "TMM"
 #' @param ... passed to normLibSizes function
 #'
-#' @return
+#' @return Object of \code{\link{SummarizedExperiment}} class where a new assay
+#' is added to the input object.
 #' @export
 #' @import edgeR
 #'
 #' @examples
-normalizeEdgerCPM <- function(se, normLibSizes.method="TMM",cpm.log = TRUE, ...){
+normalizeEdgerCPM <- function(se, method="TMM", cpm.log = TRUE, ...){
     stopifnot(is(se, "SummarizedExperiment"))
-    x<- normLibSizes(se,method=normLibSizes.method,...)
+    x<- normLibSizes(se,method=method,...)
     x<- cpm(x,log=cpm.log)
     assay_name <- ifelse(cpm.log,"log","") #if_else is better to handle na values
     assay_name <- paste(assay_name,
-                        ifelse(normLibSizes.method != "none",
-                               normLibSizes.method,
-                               "CPM"),sep = "")
+                        ifelse(method != "none",
+                               method, "CPM"), sep = "")
+    message("New assay name ",assay_name)
     SummarizedExperiment::assays(se)[[assay_name]] <- x
     return(se)
 }
 
-#' Title
+#' Transform SummarizedExperiment with DESeq2 package
 #'
-#' @param se
-#' @param method  "vst" or "rlog"
-#' @param ...
+#' To use SummarizedExperiment with DESeq2, this function makes sure that 'counts'
+#' assay should be the first in assays list and the mode is integer.
 #'
-#' @return
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param method "vst", "normTransform" or "rlog" to choose either of DESeq2::\code{\link{varianceStabilizingTransformation}}
+#' DESeq2::\code{\link{normTransform}} and DESeq2::\code{\link{rlog}} function.
+#' default is "vst"
+#' @param ... arguments passed to \code{\link{varianceStabilizingTransformation}}
+#' \code{\link{normTransform}} and \code{\link{rlog}}
+#'
+#' @return Object of \code{\link{SummarizedExperiment}} class where a new assay
+#' is added to the input object.
+#'
 #' @export
 #' @import DESeq2
+#' @importFrom SummarizedExperiment assays
 #'
 #' @examples
 transformDESeq2 <- function(se, method="vst", ...){
@@ -39,7 +50,8 @@ transformDESeq2 <- function(se, method="vst", ...){
     stopifnot("method must be either vst or rlog"= (method %in% c("vst", "rlog","normTransform")))
     warning("For length correction assayname must match with avgTxLength\n ")
     ## Should be checked
-    # Need to convert to DESeqDataSet first from SummarizedExperiment object where 'counts' assay should be the first in assays list
+    # Need to convert to DESeqDataSet first from SummarizedExperiment object where
+    # 'counts' assay should be the first in assays list
     if (SummarizedExperiment::assayNames(se)[1] != "counts") {
         nuOrder <-
             c("counts",

@@ -2,13 +2,22 @@
 % Please edit documentation in R/clusteringVisualization.R
 \name{plot_MDS}
 \alias{plot_MDS}
-\title{Title}
+\title{Classical multidimensional scaling}
 \usage{
-plot_MDS(se, scaledAssay = "vst", ntop = 500L, genes = NULL, ...)
+plot_MDS(se, scaledAssay = "vst", ntop = 500L, features = NULL, ...)
 }
 \arguments{
-\item{...}{}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{scaledAssay}{an scaled assay name from SummarizedExperiment::assayNames(se)}
+
+\item{ntop}{number of most-variable genes to select. Igored if "features" is specified.}
+
+\item{features}{character vector features/genes to be used to measure distance between the samples}
+
+\item{...}{other arguments like color or shape whose values should be similar
+to colData columns names passed to ggpubr::\code{\link{ggscatter}}}
 }
 \description{
-Title
+Classical multidimensional scaling is based on measuring the distance between the samples.
 }

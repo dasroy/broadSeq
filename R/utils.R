@@ -1,10 +1,3 @@
-#' Title
-#'
-#' @param packageName
-#'
-#' @return
-#'
-#' @examples
 checkNameSpace <- function(packageName) {
     if (!requireNamespace(packageName, quietly = TRUE)) {
         stop(
@@ -16,11 +9,12 @@ checkNameSpace <- function(packageName) {
     }
 }
 
-#' Useful to visualize transformed/normalized assay with count assay. Plots 'boxplot' of any assay for each sample. Aesthetic can be added from colData.
+#' Useful to visualize distribution of assay values for each sample. Plots 'boxplot'
+#' of any assay for each sample. Aesthetic can be added from colData.
 #'
-#' @param smrExpt
-#' @param assayName
-#' @param ...
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param assayName One of the values from SummarizedExperiment::assayNames(se)
+#' @param ... other arguments to be passed to ggpubr::\code{\link{ggboxplot}}
 #'
 #' @return
 #' @export
@@ -28,64 +22,107 @@ checkNameSpace <- function(packageName) {
 #' @importFrom sechm meltSE
 #' @importFrom SummarizedExperiment assayNames
 #' @examples
-sampleAssay_plot <- function(smrExpt, assayName = "counts",...){
+#' se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+#'
+#' sampleAssay_plot(se, assayName = "counts",
+#' fill="stage", # stage is a column name of colData(se)
+#' yscale="log2")
+#'
+#' se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+#'
+#' sampleAssay_plot(se, assayName = "logCPM", fill="stage")
+sampleAssay_plot <- function(se, assayName = "counts",...){
     checkNameSpace("sechm")
-    stopifnot("assayName not found"=(assayName %in% SummarizedExperiment::assayNames(smrExpt)))
+    stopifnot("assayName not found"=(assayName %in% SummarizedExperiment::assayNames(se)))
 
-    d <- sechm::meltSE(smrExpt,features=rownames(smrExpt),assayName = assayName )
+    d <- sechm::meltSE(se,features=rownames(se), assayName = assayName )
     d %>% ggpubr::ggboxplot(y = assayName, x= "sample", ...)+rotate_x_text()
 }
 
-#' Title
+#' Expression of multiple genes/features from a single assay as boxplot (or added dotplot)
 #'
-#' @param smrExpt
-#' @param features
-#' @param x
-#' @param y
-#' facet.by must be one of the column names of rowData(smrExpt). default "feature" which is equivalent to rownames of rowData
+#'
+#'
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param features a character vector of rownames or named list of character vectors
+#'  where name is one of the colnames of rowdata.
+#' @param assayName One of the values from SummarizedExperiment::assayNames(se);
+#' default is "counts" assay
+#' @param facet.by must be one of the column names of rowData(se). default
+#' "feature" which is equivalent to rownames of rowData
+#' @param x a column name of colData which will be used in x-axis
+#' @param ... other arguments to be passed to ggpubr::\code{\link{ggboxplot}}
 #'
 #' @return
 #' @export
 #' @importFrom ggpubr ggboxplot facet
 #' @importFrom dplyr filter
 #' @examples
-genes_plot <- function(smrExpt, features,facet.by = "feature",...){
+#' se <- readRDS(system.file("extdata", "mouseSE_dev_tooth_count_length_geneData.rds",
+#'     package = "broadSeq"))
+#' # The normalized values are added with the assay name "logCPM"
+#' se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+#'
+#' broadSeq::genes_plot(se,
+#'                      features = c("ENSMUSG00000000003", "ENSMUSG00000000103"),
+#'                      facet.by = "mgi_symbol", # column of rowData
+#'                      x = "stage",  fill="stage")
+#'
+#' broadSeq::genes_plot(se,
+#'                      features = list(mgi_symbol=c("Shh","Edar") ),
+#'                      facet.by = "mgi_symbol", # column of rowData
+#'                      x = "stage",  fill="stage")
+#'
+#'broadSeq::assay_plot(se, feature = c("ENSMUSG00000002633"),
+#'                     assays =  c("counts","logCPM"),
+#'                     x = "stage", fill="stage", add="dotplot", palette = "npg")
+genes_plot <- function(se, features, assayName = "counts", facet.by = "feature",
+                       x, ...){
     checkNameSpace("sechm")
+    stopifnot("assayName not found"=(assayName %in% SummarizedExperiment::assayNames(se)))
     stopifnot("features is not character or list"=(is.character(features) | is.list(features)))
+    stopifnot("facet.by is not a column name of rowData"=(facet.by %in% colnames(rowData(se))))
+
     if(is.list(features)){
         stopifnot("list length must be 1"=(length(features)==1))
-        stopifnot("name of list must be one of colnames of rowData(smrExpt)"=( all(names(features) %in% colnames(rowData(smrExpt)) ) ) )
-        features <- as.data.frame( rowData(smrExpt)) %>% filter(get(names(features)) %in%  features[[1]]) %>% rownames()
+        stopifnot("name of list must be one of colnames of rowData(se)"=(
+            all(names(features) %in% colnames(rowData(se)) ) ) )
+        features <- as.data.frame( rowData(se)) %>%
+            filter(get(names(features)) %in%  features[[1]]) %>% rownames()
     }
 
-    d <- sechm::meltSE(smrExpt,features )
-    d %>% ggboxplot( ... ) %>%
+    d <- sechm::meltSE(se,features )
+    d %>% ggboxplot(y=assayName, ... ) %>%
         facet(facet.by , scale="free")
 }
 
-#' Title
+#' Boxplot of a single gene/feature from multiple assays
 #'
-#' @param smrExpt
-#' @param feature
-#' @param assays
-#' @param x
-#' @param y
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param feature a character vector of rownames or named list of character vectors
+#'  where name is one of the column of rowdata.
+#' @param assayNames  names from SummarizedExperiment::assayNames(se); default
+#' value is "counts"
+#' @param x a column name of colData which will be used in x-axis
+#' @param ... other arguments to be passed to ggpubr::\code{\link{ggboxplot}}
 #'
-#' @return
+#' @return return an object of class ggarrange, which is a ggplot or a list of ggplot.
 #' @export
 #' @importFrom ggpubr ggboxplot facet annotate_figure
-#' @examples
-assay_plot <- function(smrExpt, feature,assays,...){
+#' @rdname genes_plot
+assay_plot <- function(se, feature, assayNames = c("counts"), x, ...){
     checkNameSpace("sechm")
+    stopifnot("assayName not found"=(all(assayNames %in% SummarizedExperiment::assayNames(se))))
+    stopifnot("features is not character or list"=(feature %in% SummarizedExperiment::rownames(se)))
 
-    d <- sechm::meltSE(smrExpt,features = feature,assayName = assays )
+    d <- sechm::meltSE(se,features = feature,assayName = assayNames )
 
     listPlot <- list()
-    for(i in 1:length(assays)){
-        listPlot[[i]] <- d %>% ggboxplot( y=assays[i],...)
+    for(i in 1:length(assayNames)){
+        listPlot[[i]] <- d %>% ggboxplot( y=assayNames[i],...)
     }
 
-    ggarrange(plotlist = listPlot,common.legend = TRUE, legend =  "bottom") %>%
+    ggarrange(plotlist = listPlot, common.legend = TRUE, legend =  "bottom") %>%
         annotate_figure(top = text_grob(feature, color = "red", face = "bold", size = 14))
 }
 
@@ -122,7 +159,8 @@ combinedEnrichment <- function(DEG_table, geneCol = "ID", logCol = "logFoldChang
                                OrgDB = "org.Hs.eg.db", keyType, universe, ont  = "BP",
                                logfoldCut = 1, pvalueCutoff  = 0.05, qvalueCutoff  = 0.05 ){
 
-    library(OrgDB,quietly = TRUE,character.only = T)
+    # library(OrgDB,quietly = TRUE,character.only = T)
+    requireNamespace(OrgDB,quietly = TRUE)
     stopifnot(keyType %in% keytypes(get(OrgDB)))
     ## feature 1: numeric vector
     DEGlist = DEG_table[[logCol]]
@@ -166,29 +204,7 @@ combinedEnrichment <- function(DEG_table, geneCol = "ID", logCol = "logFoldChang
     return(list(gseResult=gseResult, oraUP= oraUP, oraDOWN = oraDOWN))
 }
 
-rnaSeq_rank <- function(Methods_list){
-    Methods_list$limma <- Methods_list$limma[ order(Methods_list$limma$adj.P.Val),]
-    Methods_list$DEseq <- Methods_list$DEseq[ order(Methods_list$DEseq$padj),]
-    Methods_list$edgeR <- Methods_list$edgeR[ order(Methods_list$edgeR$FDR),]
-    Methods_list$DELocal <- Methods_list$DELocal[ order(-abs(Methods_list$DELocal$logFC)),]
-    Methods_list$DELocal_TAD <- Methods_list$DELocal_TAD[ order(-abs(Methods_list$DELocal_TAD$logFC)),]
-
-    makeRank <- function(result){
-        result %>%
-            dplyr::mutate(rank = 1:n()) %>%
-            dplyr::filter(tooth_genes==TRUE) %>%
-            dplyr::mutate(sequence_rank = 1:dplyr::n()) %>%
-            dplyr::select(ensembl_gene_id,rank,sequence_rank)
-    }
-    tables <- lapply(Methods_list, makeRank)
-
-    combined_r <- do.call(rbind , tables)
-
-    combined_r$method <- rownames(combined_r) %>% stringr::str_extract(pattern = "[a-zA-Z_]*")
-    return(combined_r)
-}
-
-#' Applies round function on numeric columns of a dataframe.
+#' Applies round function on numeric columns of a data.frame.
 #'
 #' @param df
 #' @param digits
@@ -210,6 +226,5 @@ is.na2 = function(x){
     if(length(x) == 0){
         return(TRUE)
     }
-
     return(is.na(x))
 }

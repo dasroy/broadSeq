@@ -1,11 +1,17 @@
 
-#' plotHeatmapCluster integrates SummarizedExperiment with pheatmap and return object as ggplot
+#' Plot clustered heatmaps
 #'
-#' @param se
-#' @param scaledAssay
-#' @param ntop
-#' @param genes
+#' Plot clustered heatmaps from SummarizedExperiment with pheatmap and return object as ggplot
+#'
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param scaledAssay an scaled assay name from SummarizedExperiment::assayNames(se)
+#' @param ntop number of most-variable genes to select. Igored if "features" is specified.
+#' @param features character vector features/genes to be used to measure distance between the samples
 #' @param annotation_col a character vector of colnames of colData(se)
+#' @param annotation_row a list of character vector of colnames of rowData(se)
+#' @param show_geneAs a character vector of colnames of rowData(se)
+#' @param ... other arguments like color or shape whose values should be similar
+#' to colData columns names passed to \code{\link{pheatmap}}
 #'
 #' @return
 #' @export
@@ -14,12 +20,27 @@
 #' @importFrom dplyr select
 #'
 #' @examples
-plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,show_geneAs = NULL,
-                               annotation_col=NA,annotation_row=NA,...){
+#' se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+#'
+#' se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+#'
+#' broadSeq::plotHeatmapCluster(
+#'     se,
+#'     scaledAssay = "logCPM",
+#'     annotation_col = c("species", "stage"),
+#'     annotation_row = c("Class","gene_biotype"),
+#'     ntop = 30, show_geneAs = "symbol",
+#'     cluster_cols = TRUE, cluster_rows = FALSE,
+#'     show_rownames = TRUE, show_colnames = FALSE,
+#'     main = "Top 30 variable gene vst"
+#' )
+plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L,
+                               features = NULL, show_geneAs = NULL,
+                               annotation_col=NA, annotation_row=NA,...){
     stopifnot(is(se, "SummarizedExperiment"))
     stopifnot("scaledAssay must be an assay of se"= (scaledAssay %in% assayNames(se)))
 
-    selected_genes <- getSelectedGene(genes, se, ntop, scaledAssay)
+    selected_genes <- getSelectedGene(features, se, ntop, scaledAssay)
 
     dottedArg <- list( ...)
     if(is.null(dottedArg$main) ) main = paste("Top ",length(selected_genes) ," variable genes")
@@ -27,7 +48,7 @@ plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,
     data_mat <- assays(se)[[scaledAssay]][selected_genes,]
     if(is.na2(annotation_col) == FALSE){
         stopifnot(
-            "annotation_col must be a subset of colnames of colData(se)"= ( (annotation_col %in% colnames(colData(se))))
+            "annotation_col must be a subset of colnames of colData(se)"= ((annotation_col %in% colnames(colData(se))))
         )
         df <- as.data.frame(colData(se)[,annotation_col])
         colnames(df) <- annotation_col
@@ -37,7 +58,7 @@ plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,
 
     if(is.na2(annotation_row) == FALSE){
         stopifnot(
-            "annotation_row must be a subset of colnames of rowData(se)"= ( (annotation_row %in% colnames(rowData(se))))
+            "annotation_row must be a subset of colnames of rowData(se)"= ((annotation_row %in% colnames(rowData(se))))
         )
         df <- rowData(se)[selected_genes,] %>% as.data.frame()  %>%
             dplyr::select(all_of(annotation_row))
@@ -49,34 +70,39 @@ plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,
         stopifnot(
             "show_geneAs must be a subset of colnames of rowData(se)"= ( (show_geneAs %in% colnames(rowData(se))))
         )
-        gene_name <- rowData(se)[selected_genes,] %>% as.data.frame()  %>% select(all_of(show_geneAs))
+        gene_name <- as.data.frame(rowData(se)[selected_genes,])  %>% dplyr::select(all_of(show_geneAs))
         rownames(data_mat) <- gene_name[rownames(data_mat),]
         if(is.data.frame(annotation_row)){
              rownames(annotation_row) <- gene_name[rownames(annotation_row),]
         }
     }
 
-    p<-pheatmap(data_mat,
-             annotation_col=annotation_col,annotation_row=annotation_row,...)
+    p<-pheatmap(data_mat, annotation_col=annotation_col,
+                annotation_row=annotation_row,
+                ...)
     return(as.ggplot(p))
 }
-#' Title
+
+#' Classical multidimensional scaling
 #'
-#' @param se
-#' @param scaledAssay
-#' @param ntop
-#' @param genes
-#' @param ...
+#' Classical multidimensional scaling is based on measuring the distance between the samples.
+#'
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param scaledAssay an scaled assay name from SummarizedExperiment::assayNames(se)
+#' @param ntop number of most-variable genes to select. Igored if "features" is specified.
+#' @param features character vector features/genes to be used to measure distance between the samples
+#' @param ... other arguments like color or shape whose values should be similar
+#' to colData columns names passed to ggpubr::\code{\link{ggscatter}}
 #'
 #' @return
 #' @export
 #' @importFrom ggpubr ggscatter ggpar
 #' @examples
-plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,...){
+plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, features = NULL,...){
     stopifnot(is(se, "SummarizedExperiment"))
     stopifnot("scaledAssay must be an assay of se"= (scaledAssay %in% assayNames(se)))
 
-    selected_genes <- getSelectedGene(genes, se, ntop, scaledAssay)
+    selected_genes <- getSelectedGene(features, se, ntop, scaledAssay)
 
     # Get the data for those genes
     selected_expr <- assays(se)[[scaledAssay]][selected_genes, ]
@@ -84,43 +110,51 @@ plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL,...){
     sampleDistMatrix <- as.matrix( sampleDists )
     mds <- data.frame(cmdscale(sampleDistMatrix))
     mds <- cbind(mds, colData(se))
-    # dottedArg <- list( ...)
-    # if(!is.null(dottedArg$shape) ) mds[,dottedArg$shape] <- factor(mds[,dottedArg$shape])
 
     return(mds %>%
-               ggscatter(
-                   x = "X1", y = "X2",
-                   ...) %>%
+               ggscatter(x = "X1", y = "X2", ...) %>%
                ggpar(title = paste("Top ",length(selected_genes) ," variable genes"))
         )
 }
 
 
-#' Perform Principal Components Analysis on a DESeqTransform object
-#' [reused code](https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906)
+#' Perform Principal Components Analysis
 #'
-#' This function is based on the `DESeq2::plotPCA()` function, but returns the
-#' results of `prcomp` in a tidy list format. This is more flexible for further
-#' custom plotting and exploring factor loadings of the PCA.
 #'
-#' @param se
-#' @param scaledAssay
-#' @param ntop
-#' @param genes
-#' @param ...
+#' This function returns the results of stats::\code{\link{prcomp}} in a tidy list format.
+#' This is more flexible for further custom PCA , biplot and exploring gene(factor) loading of the PCA.
 #'
-#' @ntop number of most-variable genes to select. Igored if "genes" is specified.
-#' @genes character vector of specific genes to use
+#' [Reused code](https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906)
+#'
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param scaledAssay an scaled assay name from SummarizedExperiment::assayNames(se)
+#' @param ntop number of most-variable genes to select. Igored if "features" is specified.
+#' @param features character vector features/genes to be used for PCA
+#' @param ... other arguments to be passed to stats::\code{\link{prcomp}}
 #'
 #' @return a list with four `data.frame` objects: pc_scores, eigen_values,
 #' loadings (eigen vectors) and the original data.
 #' @export
 #' @importFrom dplyr %>%
-prcompTidy <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL, ...){
+#' @example
+#' se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+#' computedPCA_logCPM <- broadSeq::prcompTidy(se, scaledAssay = "logCPM", ntop = 500)
+#'
+#' plotAnyPC(computedPCA = computedPCA_logCPM, x = 1, y = 2, color = "species",
+#'          shape = "stage",legend = "bottom")
+#' plotAnyPC(computedPCA = computedPCA_logCPM, x = 2, y = 3, color = "species",
+#'          shape = "stage",legend = "bottom")
+#'
+#' computedPCA_logCPM$eigen_values %>%
+#'  dplyr::filter(var_exp >= 0.5) %>% # Selecting PC explaining more than 1% variance
+#'     ggbarplot(x="PC",y="var_exp", label = TRUE, label.pos = "out")
+prcompTidy <- function(se, scaledAssay="vst", ntop = 500L, features = NULL, ...){
     stopifnot(is(se, "SummarizedExperiment"))
     stopifnot("scaledAssay must be an assay of se"= (scaledAssay %in% assayNames(se)))
+    stopifnot("features should be either NULL or subset of rownames"=
+                  (is.null(features) | features %in% SummarizedExperiment::rownames(se)))
 
-    selected_genes <- getSelectedGene(genes, se, ntop, scaledAssay)
+    selected_genes <- getSelectedGene(features, se, ntop, scaledAssay)
 
     # Get the data for those genes
     selected_expr <- assays(se)[[scaledAssay]][selected_genes, ]
@@ -174,17 +208,7 @@ prcompTidy <- function(se, scaledAssay="vst", ntop = 500L, genes = NULL, ...){
 
 }
 
-#' Title
-#'
-#' @param genes
-#' @param se
-#' @param ntop
-#' @param scaledAssay
-#'
-#' @return
 #' @importFrom genefilter rowVars
-#'
-#' @examples
 getSelectedGene <- function(genes, se, ntop, scaledAssay) {
     if(!is.null(genes)){
         message("Only using ", length(genes), " genes as requested.")
@@ -209,20 +233,21 @@ getSelectedGene <- function(genes, se, ntop, scaledAssay) {
 }
 
 
-#' Title
+#' Plots principal components
 #'
-#' @param computedPCA
-#' @param x
-#' @param y
-#' @param ...
+#' @param computedPCA a list of data.frame returned by \code{\link{prcompTidy}}
+#' @param x PC number for x-axis default 1
+#' @param y PC number for y-axis default 2
+#' @param ... other arguments like color or shape whose values should be similar
+#' to colData columns names passed to ggpubr::\code{\link{ggscatter}}
 #'
 #' @return
 #' @export
 #'
 #' @importFrom ggpubr ggscatter ggpar
 #' @importFrom ggplot2 scale_shape_manual
-#' @examples
-plotAnyPC <- function(computedPCA,x,y, ...){
+#' @rdname prcompTidy
+plotAnyPC <- function(computedPCA,x =1 ,y = 2, ...){
     pc_x = paste("PC",x,sep = "")
     pc_y = paste("PC",y,sep = "")
     pct <- computedPCA$eigen_values %>%
@@ -244,14 +269,13 @@ plotAnyPC <- function(computedPCA,x,y, ...){
 }
 
 
-#' Title
+#' biplotAnyPC
 #'
-#' @param computedPCA
-#' @param x
-#' @param y
-#' @param genes
-#' @param genesLabel
-#' @param ...
+#' @param computedPCA a list of data.frame returned by \code{\link{prcompTidy}}
+#' @param genes if genes is NULL then top max and min loaded genes of each PCs are plotted
+#' @param genesLabel one of rowData column names
+#' @param ... other arguments like color or shape whose values should be similar
+#' to colData columns names passed to ggpubr::\code{\link{ggscatter}}
 #'
 #' @return
 #' @export
@@ -259,7 +283,8 @@ plotAnyPC <- function(computedPCA,x,y, ...){
 #' @examples
 #' @importFrom ggpubr ggscatter ggpar
 #' @importFrom ggplot2 geom_segment geom_text scale_shape_manual sym
-biplotAnyPC <- function(computedPCA,x,y,
+#' @rdname prcompTidy
+biplotAnyPC <- function(computedPCA,x = 1,y = 2,
                         genes=NULL, genesLabel = NULL,...){
     pc_x = paste("PC",x,sep = "")
     pc_y = paste("PC",y,sep = "")
@@ -297,6 +322,26 @@ biplotAnyPC <- function(computedPCA,x,y,
         )
 }
 
+#' Useful for PCA
+#'
+#' @param computedPCA a list of data.frame returned by \code{\link{prcompTidy}}
+#' @param pcs The numbers of PCs
+#' @param topN Number of features per PC
+#' @param keep the column names of rowData to keep the corresponding information
+#'
+#' @return a data.frame
+#' @export
+#'
+#' @examples
+#' @rdname prcompTidy
+getFeatureLoadRanking <- function(computedPCA, pcs=1:5, topN = 10, keep ){
+    x <- plyr::ldply(paste("PC",pcs,sep = ""), .fun = extract_topGeneLoadings,
+                loadings = computedPCA$loadings,
+                topN = topN, keep = keep)
+    x$PC <- x$PC %>% factor(levels =  paste("PC",1:10,sep = ""))
+    return(x)
+}
+
 extract_topGeneLoadings <- function(loadings,whichpc,topN,keep){
     geneloadings_sorted <- dplyr::arrange(loadings, desc(abs( !!sym(whichpc)))) %>%
         dplyr::select(all_of(keep), dplyr::all_of(whichpc))
@@ -305,24 +350,4 @@ extract_topGeneLoadings <- function(loadings,whichpc,topN,keep){
     geneloadings_extreme$PC <- whichpc
     geneloadings_extreme$Rank <- 1:topN
     return(geneloadings_extreme)
-}
-
-#' Title
-#'
-#' @param computedPCA
-#' @param pcs
-#' @param topN
-#' @param keep
-#'
-#' @return
-#' @export
-#'
-#' @examples
-getFeatureLoadRanking <- function(computedPCA, pcs=1:5, topN = 10,
-                                  keep = c("symbol","gene_biotype","seq_name","Class")){
-    x <- plyr::ldply(paste("PC",pcs,sep = ""), .fun = extract_topGeneLoadings,
-                loadings = computedPCA$loadings,
-                topN = topN,keep = keep)
-    x$PC <- x$PC %>% factor(levels =  paste("PC",1:10,sep = ""))
-    return(x)
 }

@@ -2,13 +2,30 @@
 % Please edit documentation in R/utils.R
 \name{sampleAssay_plot}
 \alias{sampleAssay_plot}
-\title{Useful to visualize transformed/normalized assay with count assay. Plots 'boxplot' of any assay for each sample. Aesthetic can be added from colData.}
+\title{Useful to visualize distribution of assay values for each sample. Plots 'boxplot'
+of any assay for each sample. Aesthetic can be added from colData.}
 \usage{
-sampleAssay_plot(smrExpt, assayName = "counts", ...)
+sampleAssay_plot(se, assayName = "counts", ...)
 }
 \arguments{
-\item{...}{}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{assayName}{One of the values from SummarizedExperiment::assayNames(se)}
+
+\item{...}{other arguments to be passed to ggpubr::\code{\link{ggboxplot}}}
 }
 \description{
-Useful to visualize transformed/normalized assay with count assay. Plots 'boxplot' of any assay for each sample. Aesthetic can be added from colData.
+Useful to visualize distribution of assay values for each sample. Plots 'boxplot'
+of any assay for each sample. Aesthetic can be added from colData.
+}
+\examples{
+se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+
+sampleAssay_plot(se, assayName = "counts",
+fill="stage", # stage is a column name of colData(se)
+yscale="log2")
+
+se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+
+sampleAssay_plot(se, assayName = "logCPM", fill="stage")
 }

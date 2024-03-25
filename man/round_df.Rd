@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{round_df}
 \alias{round_df}
-\title{Applies round function on numeric columns of a dataframe.}
+\title{Applies round function on numeric columns of a data.frame.}
 \usage{
 round_df(df, digits)
 }
@@ -10,5 +10,5 @@ round_df(df, digits)
 \item{digits}{}
 }
 \description{
-Applies round function on numeric columns of a dataframe.
+Applies round function on numeric columns of a data.frame.
 }

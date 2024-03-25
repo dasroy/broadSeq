@@ -2,15 +2,25 @@
 % Please edit documentation in R/normalize.R
 \name{transformDESeq2}
 \alias{transformDESeq2}
-\title{Title}
+\title{Transform SummarizedExperiment with DESeq2 package}
 \usage{
 transformDESeq2(se, method = "vst", ...)
 }
 \arguments{
-\item{method}{"vst" or "rlog"}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
 
-\item{...}{}
+\item{method}{"vst", "normTransform" or "rlog" to choose either of DESeq2::\code{\link{varianceStabilizingTransformation}}
+DESeq2::\code{\link{normTransform}} and DESeq2::\code{\link{rlog}} function.
+default is "vst"}
+
+\item{...}{arguments passed to \code{\link{varianceStabilizingTransformation}}
+\code{\link{normTransform}} and \code{\link{rlog}}}
+}
+\value{
+Object of \code{\link{SummarizedExperiment}} class where a new assay
+is added to the input object.
 }
 \description{
-Title
+To use SummarizedExperiment with DESeq2, this function makes sure that 'counts'
+assay should be the first in assays list and the mode is integer.
 }

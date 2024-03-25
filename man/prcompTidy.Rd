@@ -2,20 +2,57 @@
 % Please edit documentation in R/clusteringVisualization.R
 \name{prcompTidy}
 \alias{prcompTidy}
-\title{Perform Principal Components Analysis on a DESeqTransform object
-\href{https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906}{reused code}}
+\alias{plotAnyPC}
+\alias{biplotAnyPC}
+\alias{getFeatureLoadRanking}
+\title{Perform Principal Components Analysis}
 \usage{
-prcompTidy(se, scaledAssay = "vst", ntop = 500L, genes = NULL, ...)
+prcompTidy(se, scaledAssay = "vst", ntop = 500L, features = NULL, ...)
+
+plotAnyPC(computedPCA, x = 1, y = 2, ...)
+
+biplotAnyPC(computedPCA, x = 1, y = 2, genes = NULL, genesLabel = NULL, ...)
+
+getFeatureLoadRanking(computedPCA, pcs = 1:5, topN = 10, keep)
 }
 \arguments{
-\item{...}{}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{scaledAssay}{an scaled assay name from SummarizedExperiment::assayNames(se)}
+
+\item{ntop}{number of most-variable genes to select. Igored if "features" is specified.}
+
+\item{features}{character vector features/genes to be used for PCA}
+
+\item{...}{other arguments like color or shape whose values should be similar
+to colData columns names passed to ggpubr::\code{\link{ggscatter}}}
+
+\item{computedPCA}{a list of data.frame returned by \code{\link{prcompTidy}}}
+
+\item{x}{PC number for x-axis default 1}
+
+\item{y}{PC number for y-axis default 2}
+
+\item{genes}{if genes is NULL then top max and min loaded genes of each PCs are plotted}
+
+\item{genesLabel}{one of rowData column names}
+
+\item{pcs}{The numbers of PCs}
+
+\item{topN}{Number of features per PC}
+
+\item{keep}{the column names of rowData to keep the corresponding information}
 }
 \value{
 a list with four \code{data.frame} objects: pc_scores, eigen_values,
 loadings (eigen vectors) and the original data.
+
+a data.frame
 }
 \description{
-This function is based on the \code{DESeq2::plotPCA()} function, but returns the
-results of \code{prcomp} in a tidy list format. This is more flexible for further
-custom plotting and exploring factor loadings of the PCA.
+This function returns the results of stats::\code{\link{prcomp}} in a tidy list format.
+This is more flexible for further custom PCA , biplot and exploring gene(factor) loading of the PCA.
+}
+\details{
+\href{https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906}{Reused code}
 }

@@ -56,3 +56,11 @@ You can install the development version of broadSeq from [GitHub](https://github
 # install.packages("devtools")
 devtools::install_github("dasroy/broadSeq")
 ```
+
+<details>
+<summary>sessionInfo</summary>
+
+```{r echo=FALSE,message=FALSE,warning=FALSE,error=FALSE}
+sessionInfo()
+```
+</details>

@@ -2,15 +2,23 @@
 % Please edit documentation in R/normalize.R
 \name{normalizeEdgerCPM}
 \alias{normalizeEdgerCPM}
-\title{Title}
+\title{Use of edgeR package to normalize count data}
 \usage{
-normalizeEdgerCPM(se, normLibSizes.method = "TMM", cpm.log = TRUE, ...)
+normalizeEdgerCPM(se, method = "TMM", cpm.log = TRUE, ...)
 }
 \arguments{
-\item{normLibSizes.method}{"none" ,"TMM"}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{method}{value for edgeR::\code{\link{normLibSizes}} function. default "TMM"}
+
+\item{cpm.log}{value for edgeR::\code{\link{cpm}} function. default TRUE}
 
 \item{...}{passed to normLibSizes function}
 }
+\value{
+Object of \code{\link{SummarizedExperiment}} class where a new assay
+is added to the input object.
+}
 \description{
-Title
+Use of edgeR package to normalize count data
 }

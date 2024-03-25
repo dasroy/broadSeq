@@ -2,21 +2,33 @@
 % Please edit documentation in R/wrappers.R
 \name{use_multDE}
 \alias{use_multDE}
-\title{Title}
+\title{To identify differentially expressed genes by multiple methods}
 \usage{
 use_multDE(
   deFun_list,
   return.df = FALSE,
-  smrExpt,
-  class_id,
+  se,
+  colData_id,
   control,
   treatment,
   ...
 )
 }
 \arguments{
+\item{deFun_list}{a list of funtion which can perform differential expression analysis}
+
+\item{return.df}{wheter to return all results aggregated form of data.frame}
+
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{colData_id}{One of the columns of colData(se). It should be factors of more than one value.}
+
+\item{control}{Base level and one of the factor values of \code{colData(se)[[colData_id]]}}
+
+\item{treatment}{one of the factor values of \code{colData(se)[[colData_id]]}}
+
 \item{...}{}
 }
 \description{
-Title
+To identify differentially expressed genes by multiple methods
 }

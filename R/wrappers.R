@@ -1,80 +1,60 @@
 ## Based on https://montilab.github.io/BS831/articles/docs/DiffanalysisRNAseqComparison.html
 ## https://static-content.springer.com/esm/art%3A10.1038%2Fs41598-020-76881-x/MediaObjects/41598_2020_76881_MOESM1_ESM.pdf
 
-
-#'use_limma_trend
-#'
-#' @param smrExpt a `SummarizedExperiment` object
-#' @param class_id one of the colnames of colData(smrExpt) and must be a factor.
-#' @param control one of the factor values of class_id
-#' @param treatment another factor values of class_id
-#' @param rank (TRUE/FALSE) whether to rank genes
-#' @param ... additional arguments for limma::topTable
-#'
-#' @return results of limma::topTable
 #' @export
-#'
-#' @examples
-use_limma_trend <- function(smrExpt, class_id, control, treatment, rank=FALSE,...){
+#' @rdname use_limma
+use_limma_trend <- function(se, colData_id, control, treatment, rank=FALSE,...){
     showPlot = FALSE
     dottedArg <- list( ...)
     if(!is.null(dottedArg$showPlot) ) showPlot = dottedArg$showPlot
 
-    return(use_limma(smrExpt = smrExpt, class_id = class_id,
+    return(use_limma(se = se, colData_id = colData_id,
                      control = control, treatment = treatment, rank = rank,
                      useVoom = FALSE, showPlot = showPlot,...))
 }
 
-#' Title
-#'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
-#'
-#' @return
 #' @export
-#'
-#' @examples
-use_limma_voom <- function(smrExpt, class_id, control, treatment,rank=FALSE,...){
+#' @rdname use_limma
+use_limma_voom <- function(se, colData_id, control, treatment,rank=FALSE,...){
     showPlot = FALSE
     dottedArg <- list( ...)
     if(!is.null(dottedArg$showPlot) ) showPlot = dottedArg$showPlot
 
-    return(use_limma(smrExpt = smrExpt, class_id = class_id,
+    return(use_limma(se = se, colData_id = colData_id,
                      control = control, treatment = treatment, rank = rank,
                      useVoom = TRUE, showPlot = showPlot,...))
 }
 
-#' Title
+#' To use SummarizedExperiment with package limma
 #'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param useVoom
-#' @param rank
-#' @param showPlot
-#' @param ...
-#' @param limma.adjust
-#' @param limma.sort.by
-#' @param limma.number
+#' A wrapper function of limma where input is an object of \code{\link{SummarizedExperiment}}
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param colData_id One of the columns of colData(se). It should be factors of more than one value.
+#' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
+#' @param treatment one of the factor values of `colData(se)[[colData_id]]`
+#' @param rank Logical value default FALSE. If true the result will have an
+#' additional column named "rank"
+#' @param useVoom whether to use limma::\code{\link{voom}} or edgeR::\code{\link{cpm}}
+#' @param showPlot whether to use limma::\code{\link{plotSA}}; default FALse
+#' @param ... other arguments to be passed to main function edgeR::\code{\link{calcNormFactors}}.
+#' @param limma.adjust argument for limma::\code{\link{topTable}}
+#' @param limma.sort.by argument for limma::\code{\link{topTable}}
+#' @param limma.number argument for limma::\code{\link{topTable}}
 #'
-#' @return
+#' @return a data.frame of output from limma::\code{\link{topTable}}
 #'
+#' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
-use_limma <- function(smrExpt, class_id, control, treatment,
+use_limma <- function(se, colData_id, control, treatment,
                       rank=FALSE, useVoom=TRUE, showPlot=FALSE,
                       limma.adjust="BH", limma.sort.by = "p", limma.number=Inf,
                       ...) {
     checkNameSpace("limma")
     checkNameSpace("edgeR")
-    smrExpt <- smrExpt[,smrExpt[[class_id]] %in% c(control,treatment)]
-    # dim(smrExpt)
-    condition <- factor(as.character(SummarizedExperiment::colData(smrExpt)[,class_id]),
+    se <- se[,se[[colData_id]] %in% c(control,treatment)]
+    # dim(se)
+    condition <- factor(as.character(SummarizedExperiment::colData(se)[,colData_id]),
                         levels = c(control,treatment))
 
     design <- stats::model.matrix(~ 0 + condition)
@@ -85,7 +65,7 @@ use_limma <- function(smrExpt, class_id, control, treatment,
     contrast.matrix <- eval(parse(text=command_str))
 
     ##Normalizing
-    dge <- edgeR::calcNormFactors(smrExpt, ...)
+    dge <- edgeR::calcNormFactors(se, ...)
 
     if(showPlot & useVoom){
         par(mfrow=c(1,2))
@@ -105,7 +85,8 @@ use_limma <- function(smrExpt, class_id, control, treatment,
     fit <- limma::contrasts.fit(fit, contrast.matrix)
     fit <- limma::eBayes(fit,trend = !useVoom)
 
-    res <- limma::topTable(fit, coef=1, adjust=limma.adjust, sort.by = limma.sort.by, number=limma.number,
+    res <- limma::topTable(fit, coef=1, adjust=limma.adjust,
+                           sort.by = limma.sort.by, number=limma.number,
                            ...)
     if(isTRUE(showPlot)){
         limma::plotSA(fit, main="Final model: Mean-variance trend")
@@ -118,72 +99,55 @@ use_limma <- function(smrExpt, class_id, control, treatment,
     }
 }
 
-#' Title
-#'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
-#'
-#' @return
 #' @export
-#'
-#' @examples
-use_edgeR_GLM <- function(smrExpt, class_id, control, treatment, rank=FALSE,...){
-    return(use_edgeR(smrExpt = smrExpt, class_id = class_id,
+#' @rdname use_edgeR
+use_edgeR_GLM <- function(se, colData_id, control, treatment, rank=FALSE,...){
+    return(use_edgeR(se = se, colData_id = colData_id,
                      control = control, treatment = treatment, rank = rank,
                      option="GLM",...))
 }
 
-
-#' Title
-#'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
-#'
-#' @return
 #' @export
-#'
-#' @examples
-use_edgeR_exact <- function(smrExpt, class_id, control, treatment, rank=FALSE,...){
-    return(use_edgeR(smrExpt = smrExpt, class_id = class_id,
+#' @rdname use_edgeR
+use_edgeR_exact <- function(se, colData_id, control, treatment, rank=FALSE,...){
+    return(use_edgeR(se = se, colData_id = colData_id,
                      control = control, treatment = treatment, rank = rank,
                      option = "exact",...))
 }
 
-#' Title
+
+#' To use SummarizedExperiment with package edgeR
 #'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param option
-#' @param ...
-#' @param edgeR.n
-#' @param edgeR.adjust.method
-#' @param edgeR.sort.by
+#' A wrapper function of DESeq2 where input is an object of \code{\link{SummarizedExperiment}}
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param colData_id One of the columns of colData(se). It should be factors of more than one value.
+#' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
+#' @param treatment one of the factor values of `colData(se)[[colData_id]]`
+#' @param rank Logical value default FALSE. If true the result will have an
+#' additional column named "rank"
+#' @param edgeR.n argument for edgeR::\code{\link{ntopTags}}
+#' @param edgeR.adjust.method argument for edgeR::\code{\link{ntopTags}}
+#' @param edgeR.sort.by argument for edgeR::\code{\link{ntopTags}}
+#' @param option "GLM" or "exact" to indicate to use either edgeR::\code{\link{glmLRT}}
+#' or edgeR::\code{\link{exactTest}}
+#' @param ... other arguments to be passed to edgeR::\code{\link{glmLRT}}
+#' or edgeR::\code{\link{exactTest}}
 #'
-#' @return
-#' @importFrom dplyr %>% left_join
+#' @return a data.frame of output from edgeR::\code{\link{topTags}}
+#' @export
+#'
 #' @examples
-use_edgeR <- function(smrExpt, class_id, control, treatment, rank=FALSE,
+use_edgeR <- function(se, colData_id, control, treatment, rank=FALSE,
                       edgeR.n = Inf, edgeR.adjust.method = "BH", edgeR.sort.by = "PValue",
-                      option="GLM",...){ # "exact"
+                      option="GLM",...){
     checkNameSpace("edgeR")
     stopifnot("option must be either 'GLM' or 'exact'"=(option=="GLM" | option=="exact"))
-    smrExpt <- smrExpt[,smrExpt[[class_id]] %in% c(control,treatment)]
-    condition <- factor(as.character(SummarizedExperiment::colData(smrExpt)[,class_id]),
+    se <- se[,se[[colData_id]] %in% c(control,treatment)]
+    condition <- factor(as.character(SummarizedExperiment::colData(se)[,colData_id]),
                         levels = c(control,treatment))
 
     ##Normalizing
-    dt <- edgeR::calcNormFactors(smrExpt,method="TMM")
+    dt <- edgeR::calcNormFactors(se,method="TMM")
     ##Normalization
 
     if(option=="GLM"){
@@ -197,17 +161,17 @@ use_edgeR <- function(smrExpt, class_id, control, treatment, rank=FALSE,
         d2 <- edgeR::estimateGLMTagwiseDisp(d2,design)
         fit <- edgeR::glmFit(d2,design)
 
-        command_str <- paste("limma::makeContrasts(",treatment , "-", control,",levels = design)"
-                             , sep = "")
+        command_str <- paste("limma::makeContrasts(",treatment , "-", control,
+                             ",levels = design)" , sep = "")
         contrast.matrix <- eval(parse(text=command_str))
-        t12 <- edgeR::glmLRT(fit,contrast=contrast.matrix)
+        t12 <- edgeR::glmLRT(fit,contrast=contrast.matrix,...)
     }else if(option=="exact"){
         ##Estimate dispersion
         dt$samples$group <- condition
-        d1 <- edgeR::estimateCommonDisp(dt,  verbose=T)
+        d1 <- edgeR::estimateCommonDisp(dt, verbose=T)
         d1 <- edgeR::estimateTagwiseDisp(d1)
         ##Compare groups (exact test)
-        t12 <- edgeR::exactTest(d1, pair=c(1,2))
+        t12 <- edgeR::exactTest(d1, pair=c(1,2),...)
     }
     res <- edgeR::topTags(t12, n=edgeR.n, sort.by = edgeR.sort.by ,
                           adjust.method = edgeR.adjust.method,
@@ -220,41 +184,43 @@ use_edgeR <- function(smrExpt, class_id, control, treatment, rank=FALSE,
     }
 }
 
-#' Title
+#' To use SummarizedExperiment with package DESeq2
 #'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
+#' A wrapper function of DESeq2 where input is an object of \code{\link{SummarizedExperiment}}
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param colData_id One of the columns of colData(se). It should be factors of more than one value.
+#' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
+#' @param treatment one of the factor values of `colData(se)[[colData_id]]`
+#' @param rank Logical value default FALSE. If true the result will have an
+#' additional column named "rank" and the results are ranked on "padj"
+#' @param ...  other arguments to be passed to main function DESeq2::\code{\link{results}}.
 #'
-#' @return
+#' @return a data.frame converted from DESeq2::\code{\link{DESeqResults}}
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
- use_deseq2 <- function(smrExpt, class_id, control, treatment,rank=FALSE,...){
+ use_deseq2 <- function(se, colData_id, control, treatment,rank=FALSE,...){
     checkNameSpace("DESeq2")
-     if (SummarizedExperiment::assayNames(smrExpt)[1] != "counts") {
+     if (SummarizedExperiment::assayNames(se)[1] != "counts") {
          nuOrder <-
              c("counts",
-               setdiff(SummarizedExperiment::assayNames(smrExpt), "counts"))
-         SummarizedExperiment::assays(smrExpt) <-
-             SummarizedExperiment::assays(smrExpt)[nuOrder]
+               setdiff(SummarizedExperiment::assayNames(se), "counts"))
+         SummarizedExperiment::assays(se) <-
+             SummarizedExperiment::assays(se)[nuOrder]
      }
-     smrExpt <- smrExpt[,smrExpt[[class_id]] %in% c(control,treatment)]
+     se <- se[,se[[colData_id]] %in% c(control,treatment)]
 
-    formula_str <- paste("formula( ~ ",class_id, ")", sep = "")
-    dds <- DESeq2::DESeqDataSet(smrExpt, design = eval(parse(text=formula_str)))
+    formula_str <- paste("formula( ~ ",colData_id, ")", sep = "")
+    dds <- DESeq2::DESeqDataSet(se, design = eval(parse(text=formula_str)))
 
     ## set reference to control, otherwise default is alphabetical order
-    dds[[class_id]] <- factor(dds[[class_id]], levels=c(control,treatment))
+    dds[[colData_id]] <- factor(dds[[colData_id]], levels=c(control,treatment))
 
     ##   1. estimate size factors
     ##   2. estimate dispersion
     ##   3. negative binomial GLM fitting and wald test
     dds_res <- DESeq2::DESeq(dds)
-    res <- DESeq2::results(dds_res)
+    res <- DESeq2::results(dds_res,...)
     # res$dispersion <- DESeq2::dispersions(dds_res)
     if(rank){
         return(res %>% as.data.frame() %>%
@@ -265,34 +231,38 @@ use_edgeR <- function(smrExpt, class_id, control, treatment, rank=FALSE,
     }
 }
 
-#' Title
+#' To use SummarizedExperiment with package DELocal
 #'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
+#' A wrapper function of DELocal where input is an object of \code{\link{SummarizedExperiment}}
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param colData_id One of the columns of colData(se). It should be factors of
+#' more than one value.
+#' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
+#' @param treatment one of the factor values of `colData(se)[[colData_id]]`
+#' @param rank Logical value default FALSE. If true the result will have an
+#' additional column named "rank" and the results are ranked on "relative.logFC"
 #'
-#' @return
+#' @param ... other arguments to be passed to main function DELocal::\code{\link{DELocal}}.
+#'
+#' @return a data.frame from DELocal
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
-use_DELocal <- function(smrExpt, class_id, control, treatment,rank=FALSE,...){
+use_DELocal <- function(se, colData_id, control, treatment,rank=FALSE,...){
     checkNameSpace("DELocal")
-    formula_str <- paste("formula( ~ ",class_id, ")", sep = "")
-    if (SummarizedExperiment::assayNames(smrExpt)[1] != "counts") {
+    formula_str <- paste("formula( ~ ",colData_id, ")", sep = "")
+    if (SummarizedExperiment::assayNames(se)[1] != "counts") {
         nuOrder <-
             c("counts",
-              setdiff(SummarizedExperiment::assayNames(smrExpt), "counts"))
-        SummarizedExperiment::assays(smrExpt) <-
-            SummarizedExperiment::assays(smrExpt)[nuOrder]
+              setdiff(SummarizedExperiment::assayNames(se), "counts"))
+        SummarizedExperiment::assays(se) <-
+            SummarizedExperiment::assays(se)[nuOrder]
     }
-    smrExpt <- smrExpt[,smrExpt[[class_id]] %in% c(control,treatment)]
+    se <- se[,se[[colData_id]] %in% c(control,treatment)]
 
-    DELocal_result <- DELocal::DELocal(pSmrExpt = smrExpt, # Genes without neighbours are missing
-                              nearest_neighbours = 5,pDesign =eval(parse(text=formula_str)),
-                              pValue_cut = 1, pLogFold_cut = 0)
+    DELocal_result <- DELocal::DELocal(pSmrExpt = se, # Genes without neighbours are missing
+                              nearest_neighbours = 5, pDesign =eval(parse(text=formula_str)),
+                              pValue_cut = 1, pLogFold_cut = 0,...)
     if(rank){
         return(DELocal_result %>%
                    dplyr::arrange(desc(abs(relative.logFC))) %>%
@@ -304,24 +274,27 @@ use_DELocal <- function(smrExpt, class_id, control, treatment,rank=FALSE,...){
 
 
 
-#' Title
+#' To use SummarizedExperiment with package EBSeq
 #'
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
+#' A wrapper function of EBSeq where input is an object of \code{\link{SummarizedExperiment}}
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param colData_id One of the columns of colData(se). It should be factors of
+#' more than one value.
+#' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
+#' @param treatment one of the factor values of `colData(se)[[colData_id]]`
+#' @param rank Logical value default FALSE. If true the result will have an
+#' additional column named "rank" and the results are ranked on "PPDE"
+#' @param ... other arguments to be passed to main function EBSeq::\code{\link{GetDEResults}}.
 #'
-#' @return
+#' @return a data.frame object converted from the output of EBSeq::\code{\link{GetDEResults}}.
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
-use_EBSeq <- function(smrExpt, class_id, control, treatment, rank=FALSE,...){
+use_EBSeq <- function(se, colData_id, control, treatment, rank=FALSE,...){
     checkNameSpace("EBSeq")
-    control_names <- smrExpt[,smrExpt[[class_id]]==control] %>% colnames()
-    treatment_names <- smrExpt[,smrExpt[[class_id]]==treatment] %>% colnames()
-    tabla <- SummarizedExperiment::assays(smrExpt)[["counts"]][,c(control_names,treatment_names)]
+    control_names <- se[,se[[colData_id]]==control] %>% colnames()
+    treatment_names <- se[,se[[colData_id]]==treatment] %>% colnames()
+    tabla <- SummarizedExperiment::assays(se)[["counts"]][,c(control_names,treatment_names)]
     Sizes=EBSeq::MedianNorm(tabla)
 
     EBOut=EBSeq::EBTest(Data=tabla,
@@ -348,40 +321,40 @@ use_EBSeq <- function(smrExpt, class_id, control, treatment, rank=FALSE,...){
 #' Differential expression method for NOISeq
 #'
 #' This is a wrapper function of NOISeq::\code{\link{noiseqbio}} whose input class is ´eSet´
-#' and output class is `Output` which are not widely used. We can use as(smrExpt, "ExpressionSet")
+#' and output class is `Output` which are not widely used. We can use as(se, "ExpressionSet")
 #' to get an eSet easily but then it will be hard to refer the treatment and control.
 #' The order of factors influence the log fold change sign. To keep it comparable
 #' to other methods the `NOISeq::readData()` is used internally.
 #'
-#' @param smrExpt Object of \code{\link{SummarizedExperiment}} class
-#' @param class_id One of the columns of colData(smrExpt). It should be factors of more than one value.
-#' @param control Base level and one of the factor values of `colData(smrExpt)[["condition"]]`
-#' @param treatment one of the factor values of `colData(smrExpt)[["condition"]]`
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param colData_id One of the columns of colData(se). It should be factors of more than one value.
+#' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
+#' @param treatment one of the factor values of `colData(se)[[colData_id]]`
 #' @param rank Logical value default FALSE. If true the result will have an
 #' additional column named "rank" which is ordered by ´prob´ values returned by
 #' function NOISeq::\code{\link{noiseqbio}}.
 #' @param ...  other arguments to be passed to main function NOISeq::\code{\link{noiseqbio}}.
 #' The 'input' and 'factor' argument should not be used.
 #'
-#' @return A data.frame object from the "NOISeq::noiseqbio()@results[[1]]". For details check
+#' @return A data.frame object from the results of NOISeq::noiseqbio(). For details check
 #' the documentation of ´NOISeq´
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
-use_NOIseq <- function(smrExpt, class_id, control, treatment, rank=FALSE, ...){
-    control_names <- smrExpt[,smrExpt[[class_id]]==control] %>% colnames()
-    treatment_names <- smrExpt[,smrExpt[[class_id]]==treatment] %>% colnames()
-    tabla <- SummarizedExperiment::assays(smrExpt)[["counts"]][,c(control_names,treatment_names)] %>% as.data.frame()
+use_NOIseq <- function(se, colData_id, control, treatment, rank=FALSE, ...){
+    control_names <- se[,se[[colData_id]]==control] %>% colnames()
+    treatment_names <- se[,se[[colData_id]]==treatment] %>% colnames()
+    tabla <- SummarizedExperiment::assays(se)[["counts"]][,c(control_names,treatment_names)] %>% as.data.frame()
 
     expt_factors = data.frame(Condition = factor(c(
         rep(treatment, length(treatment_names)),
         rep(control, length(control_names))
     )))
-    colnames(expt_factors) <- class_id
+    colnames(expt_factors) <- colData_id
     expt_data <- NOISeq::readData(data = tabla, factors = expt_factors)
 
     ##Available normalization methods: norm = "rpkm", "uqua", "tmm2, "none"
-    expt_noiseqbio = NOISeq::noiseqbio(input= expt_data, factor=class_id, ...)
+    expt_noiseqbio = NOISeq::noiseqbio(input= expt_data, factor=colData_id, ...)
 
     if(rank){
         expt_noiseqbio@results[[1]] %>%
@@ -392,25 +365,27 @@ use_NOIseq <- function(smrExpt, class_id, control, treatment, rank=FALSE, ...){
     }
 }
 
-#' samr package is not installable as package 'impute' is not available. Please
-#' install this package manually before using this.
+#' To use SummarizedExperiment with package samr
 #'
-#' @param smrExpt
-#' @param class_id
+#' samr package is not installable as package 'impute' is not available. Please
+#' install this package manually before using this. It may be removed from future release
+#'
+#' @param se
+#' @param colData_id
 #' @param control
 #' @param treatment
 #' @param rank
 #' @param ...
 #'
 #' @return
-#' @export
 #' @importFrom dplyr %>% left_join
+#' @importFrom stringr str_remove
 #' @examples
-use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
+use_SAMseq <- function(se, colData_id, control, treatment,rank = FALSE,...){
     checkNameSpace("samr")
-    control_names <- smrExpt[,smrExpt[[class_id]]==control] %>% colnames()
-    treatment_names <- smrExpt[,smrExpt[[class_id]]==treatment] %>% colnames()
-    tabla <- SummarizedExperiment::assays(smrExpt)[["counts"]][,c(control_names,treatment_names)] %>% as.data.frame()
+    control_names <- se[,se[[colData_id]]==control] %>% colnames()
+    treatment_names <- se[,se[[colData_id]]==treatment] %>% colnames()
+    tabla <- SummarizedExperiment::assays(se)[["counts"]][,c(control_names,treatment_names)] %>% as.data.frame()
     y <- factor(c(rep(control,length(control_names)),
                  rep(treatment,length(treatment_names))),
                levels = c(control,treatment))
@@ -432,7 +407,7 @@ use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
         res <- rbind(as.data.frame(samfit$siggenes.table$genes.up),down)
     }
     colnames(res) <- colnames(res) %>% stringr::str_remove(" ")
-    missing_id <- setdiff(rownames(smrExpt),res$GeneID)
+    missing_id <- setdiff(rownames(se),res$GeneID)
     missing_data <- data.frame(GeneID=missing_id, GeneName=missing_id,
                                `Score(d)` = NA, 'FoldChange' = NA, `q-value(%)` = NA)
     colnames(missing_data) <- colnames(res)
@@ -453,14 +428,14 @@ use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
     return(res)
 }
 
-#' Title
+#' To identify differentially expressed genes by multiple methods
 #'
-#' @param deFun_list
-#' @param return.df
-#' @param smrExpt
-#' @param class_id
-#' @param control
-#' @param treatment
+#' @param deFun_list a list of funtion which can perform differential expression analysis
+#' @param return.df wheter to return all results aggregated form of data.frame
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param colData_id One of the columns of colData(se). It should be factors of more than one value.
+#' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
+#' @param treatment one of the factor values of `colData(se)[[colData_id]]`
 #' @param ...
 #'
 #' @importFrom purrr reduce
@@ -468,15 +443,16 @@ use_SAMseq <- function(smrExpt, class_id, control, treatment,rank = FALSE,...){
 #' @export
 #'
 #' @examples
-use_multDE <- function(deFun_list, return.df= FALSE ,smrExpt , class_id , control , treatment , ... ) {
+use_multDE <- function(deFun_list, return.df= FALSE ,se ,
+                       colData_id , control , treatment , ... ) {
     wrap_it <- function( f, ...) {
         message(paste("Now executing >> ",f))
         message("####")
         deFun_list[[f]](... )
     }
-    SummarizedExperiment::colData(smrExpt)[,class_id] %>% summary() #%>% message()
+    SummarizedExperiment::colData(se)[,colData_id] %>% summary()
 
-    y <- lapply(names(deFun_list), wrap_it, smrExpt = smrExpt, class_id = class_id,
+    y <- lapply(names(deFun_list), wrap_it, se = se, colData_id = colData_id,
                 control = control, treatment = treatment, ...)
 
     named_result <- list()
@@ -492,7 +468,7 @@ use_multDE <- function(deFun_list, return.df= FALSE ,smrExpt , class_id , contro
 
         y <- purrr::reduce(lapply(y, function(x) data.frame(x, rn = row.names(x))),
                            merge, all=TRUE)
-        gene_info <- as.data.frame(SummarizedExperiment::rowData(smrExpt))
+        gene_info <- as.data.frame(SummarizedExperiment::rowData(se))
         rownames(y) <- y$rn
         y$rn <- NULL
         y <- purrr::reduce(lapply(list(y,gene_info),
@@ -525,7 +501,7 @@ volcanoPlot <- function(df,pValName,lFCName, sigThreshold=0.05, logFCThreshold =
     df <- df %>% dplyr::mutate(padj=-log10(!!sym(pValName)),
                               Significant = if_else((!!sym(pValName) < sigThreshold & !!sym(lFCName) > logFCThreshold),"UP",
                                                     if_else((!!sym(pValName) < sigThreshold & !!sym(lFCName) < -logFCThreshold),"DOWN",
-                                                          "Not",missing="Not"),missing="Not"
+                                                          "Not", missing="Not"), missing="Not"
                               ))
     df$Significant <- factor(df$Significant,levels = c("DOWN","UP","Not"))
     plot <- df %>%  ggscatter(

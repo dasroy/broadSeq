@@ -2,13 +2,60 @@
 % Please edit documentation in R/utils.R
 \name{genes_plot}
 \alias{genes_plot}
-\title{Title}
+\alias{assay_plot}
+\title{Expression of multiple genes/features from a single assay as boxplot (or added dotplot)}
 \usage{
-genes_plot(smrExpt, features, facet.by = "feature", ...)
+genes_plot(se, features, assayName = "counts", facet.by = "feature", x, ...)
+
+assay_plot(se, feature, assayNames = c("counts"), x, ...)
 }
 \arguments{
-\item{y}{facet.by must be one of the column names of rowData(smrExpt). default "feature" which is equivalent to rownames of rowData}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{features}{a character vector of rownames or named list of character vectors
+where name is one of the colnames of rowdata.}
+
+\item{assayName}{One of the values from SummarizedExperiment::assayNames(se);
+default is "counts" assay}
+
+\item{facet.by}{must be one of the column names of rowData(se). default
+"feature" which is equivalent to rownames of rowData}
+
+\item{x}{a column name of colData which will be used in x-axis}
+
+\item{...}{other arguments to be passed to ggpubr::\code{\link{ggboxplot}}}
+
+\item{feature}{a character vector of rownames or named list of character vectors
+where name is one of the column of rowdata.}
+
+\item{assayNames}{names from SummarizedExperiment::assayNames(se); default
+value is "counts"}
+}
+\value{
+return an object of class ggarrange, which is a ggplot or a list of ggplot.
 }
 \description{
-Title
+Expression of multiple genes/features from a single assay as boxplot (or added dotplot)
+
+Boxplot of a single gene/feature from multiple assays
+}
+\examples{
+se <- readRDS(system.file("extdata", "mouseSE_dev_tooth_count_length_geneData.rds",
+    package = "broadSeq"))
+# The normalized values are added with the assay name "logCPM"
+se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+
+broadSeq::genes_plot(se,
+                     features = c("ENSMUSG00000000003", "ENSMUSG00000000103"),
+                     facet.by = "mgi_symbol", # column of rowData
+                     x = "stage",  fill="stage")
+
+broadSeq::genes_plot(se,
+                     features = list(mgi_symbol=c("Shh","Edar") ),
+                     facet.by = "mgi_symbol", # column of rowData
+                     x = "stage",  fill="stage")
+
+broadSeq::assay_plot(se, feature = c("ENSMUSG00000002633"),
+                    assays =  c("counts","logCPM"),
+                    x = "stage", fill="stage", add="dotplot", palette = "npg")
 }

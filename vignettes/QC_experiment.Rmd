@@ -25,7 +25,7 @@ library(ggplot2)
 ## Reading the data
 
 Here we read gene expression data which is quantified by 'salmon' and
-processed by 'tximport'. The 'salmon' generates count data, "abundance"
+processed by `tximport` package. The 'salmon' generates count data, "abundance"
 (TPM) and gene length values. Therefore we may rename the corresponding
 assay slot 'abundance' to 'TPM'.
 
@@ -36,26 +36,26 @@ of three different developing rodent species. The tissues are also from
 four different developmental time points.
 
 ```{r message=FALSE}
-smrExpt <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
-class(smrExpt)
+se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+SummarizedExperiment::assayNames(se)
 ```
 
 ### Sample metadata
 
 ```{r }
-as.data.frame(colData(smrExpt)) %>% dplyr::count(stage,species) %>% tidyr::spread(stage,n)
+as.data.frame(colData(se)) %>% dplyr::count(stage,species) %>% tidyr::spread(stage,n)
 
-smrExpt$stage <- factor(smrExpt$stage,levels = c("Bud","Cap","Late Cap","Bell"))
+se$stage <- factor(se$stage,levels = c("Bud","Cap","Late Cap","Bell"))
 ```
 
 ### Filtering out low expression genes
 
 ```{r lowExpr,warning=FALSE,fig.width= 6}
-# assays(smrExpt)[["counts"]][,1] %>% gghistogram() +scale_x_log10()
-assays(smrExpt)[["counts"]][,5] %>% ggpubr::ggdensity(y = "count")+
+# assays(se)[["counts"]][,1] %>% gghistogram() +scale_x_log10()
+assays(se)[["counts"]][,5] %>% ggpubr::ggdensity(y = "count")+
     ggplot2::geom_vline(xintercept = 10)+ggplot2::scale_x_log10()
 
-keep <- (assays(smrExpt)[["counts"]] >= 3) %>% rowSums() >= 5 
+keep <- (assays(se)[["counts"]] >= 3) %>% rowSums() >= 5 
 # smallest Group Size is 5
 table(keep)
 ```
@@ -73,9 +73,9 @@ values.
 ### CPM
 
 ```{r warning=FALSE,message=FALSE}
-smrExpt <- broadSeq::normalizeEdgerCPM(smrExpt ,normLibSizes.method = "none",cpm.log = TRUE )
+se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
 ## The normalized values are added with the assay name "logCPM"
-SummarizedExperiment::assayNames(smrExpt)
+SummarizedExperiment::assayNames(se)
 ```
 
 ### TMM
@@ -86,19 +86,17 @@ normalizes the library sizes rather than the counts'
 developer).
 
 ```{r warning=FALSE,message=FALSE}
-smrExpt <- broadSeq::normalizeEdgerCPM(smrExpt ,
-                                       normLibSizes.method = "TMM",
-                                       cpm.log = FALSE )
+se <- broadSeq::normalizeEdgerCPM(se , method = "TMM", cpm.log = FALSE )
 ## The normalized values are added with the assay name "TMM"
-SummarizedExperiment::assayNames(smrExpt)
+SummarizedExperiment::assayNames(se)
 ```
 
 #### access
 
 ```{r }
-assays(smrExpt)[["counts"]][1:5,1:5]
-assays(smrExpt)[["TMM"]][1:5,1:5]
-assays(smrExpt)[["logCPM"]][1:5,1:5]
+assays(se)[["counts"]][1:5,1:5]
+assays(se)[["TMM"]][1:5,1:5]
+assays(se)[["logCPM"]][1:5,1:5]
 ```
 
 ## DESeq2 Transformation
@@ -110,13 +108,13 @@ DESeq2 provides three different transformations
 variance stabilizing transformation (VST)
 
 ```{r warning=FALSE}
-smrExpt <- broadSeq::transformDESeq2(smrExpt,method = "vst"  )
+se <- broadSeq::transformDESeq2(se,method = "vst"  )
 ```
 
 ### Normalized counts transformation
 
 ```{r }
-smrExpt <- broadSeq::transformDESeq2(smrExpt, method = "normTransform"  )
+se <- broadSeq::transformDESeq2(se, method = "normTransform"  )
 ```
 
 ### rlog
@@ -124,11 +122,11 @@ smrExpt <- broadSeq::transformDESeq2(smrExpt, method = "normTransform"  )
 regularized log
 
 ```{r eval=FALSE}
-smrExpt <- broadSeq::transformDESeq2(smrExpt,method = "rlog"  )
+se <- broadSeq::transformDESeq2(se, method = "rlog")
 ```
 
 ```{r }
-SummarizedExperiment::assayNames(smrExpt)
+SummarizedExperiment::assayNames(se)
 ```
 
 ### Comparision
@@ -136,18 +134,18 @@ SummarizedExperiment::assayNames(smrExpt)
 Boxplot of different transforms for each sample.
 
 ```{r warning=FALSE,fig.height=6,fig.width=8}
-p <- broadSeq::sampleAssay_plot(smrExpt[, smrExpt$species=="Mouse" ], 
+p <- broadSeq::sampleAssay_plot(se[, se$species=="Mouse" ], 
                            assayName = "counts", fill = "stage", 
                            yscale = "log2")+ rremove("x.text")
 
-p1 <- broadSeq::sampleAssay_plot(smrExpt[, smrExpt$species=="Mouse"], 
+p1 <- broadSeq::sampleAssay_plot(se[, se$species=="Mouse"], 
                            assayName = "vst", fill = "stage")+ rremove("x.text")
 
-p2 <- broadSeq::sampleAssay_plot(smrExpt[, smrExpt$species=="Mouse"], 
+p2 <- broadSeq::sampleAssay_plot(se[, se$species=="Mouse"], 
                            assayName = "TMM", fill = "stage", 
                            yscale = "log10")+ rremove("x.text")
 
-p3 <- broadSeq::sampleAssay_plot(smrExpt[, smrExpt$species=="Mouse"], 
+p3 <- broadSeq::sampleAssay_plot(se[, se$species=="Mouse"], 
                            assayName = "logCPM", fill = "stage")+ rremove("x.text")
 
 
@@ -160,18 +158,18 @@ Plot standard deviations versus means expression
 if (requireNamespace("vsn", quietly = TRUE)) {
     library("vsn")
     x <- meanSdPlot(
-        log2(assays(smrExpt[, smrExpt$species == "Rat"])[["counts"]]+1),
+        log2(assays(se[, se$species == "Rat"])[["counts"]]+1),
         plot = FALSE)
     print(x$gg +ggtitle(label = "log2(n+1) "))
     
     x <- meanSdPlot(
-        assays(smrExpt[, smrExpt$species == "Rat"])[["vst"]],
+        assays(se[, se$species == "Rat"])[["vst"]],
         plot = FALSE)
     
     print(x$gg +ggtitle(label = "Vst"))
     
     x <- meanSdPlot(
-        assays(smrExpt[, smrExpt$species == "Rat"])[["logCPM"]],
+        assays(se[, se$species == "Rat"])[["logCPM"]],
         plot = FALSE)
     print(x$gg + ggtitle(label = "logCPM"))
 }    
@@ -182,15 +180,15 @@ if (requireNamespace("vsn", quietly = TRUE)) {
 
 ```{r message=FALSE,fig.width=8,fig.height=6,warning=FALSE}
 ## Multiple assay of a single gene
-broadSeq::assay_plot(smrExpt, feature = c("Shh"), 
-           assays =  c("counts","logCPM","vst","TMM"),
+broadSeq::assay_plot(se, feature = c("Shh"), 
+           assayNames = c("counts","logCPM","vst","TMM"),
            x = "stage", fill="species", add="dotplot", palette = "npg")
 
 ## Expression of multiple genes from a single assay
-broadSeq::genes_plot(smrExpt, 
+broadSeq::genes_plot(se, 
                      features = c("Shh","Edar"), 
                      facet.by = "symbol",
-                     x = "stage", y = "vst", fill="species", palette = "jco")
+                     x = "stage", assayName = "vst", fill="species", palette = "jco")
 ```
 
 #### Pre-defined or custom color palette based on journals
@@ -200,23 +198,23 @@ Scientific journal palettes from `ggsci` R package, e.g.: "npg", "aaas",
 be passed for coloring or filling by groups from metadata.
 
 ```{r warning=FALSE,message=FALSE,fig.height=6,fig.width=8}
-jco <- broadSeq::genes_plot(smrExpt[,smrExpt$species == "Mouse"], 
-                     features = c("Shh"), facet.by = "symbol", y = "logCPM",
+jco <- broadSeq::genes_plot(se[,se$species == "Mouse"], 
+                     features = c("Shh"), facet.by = "symbol", assayName =  "logCPM",
                      x = "stage",  fill="stage", add="dotplot", xlab = "", 
                      title = "Journal of Clinical Oncology", palette = "jco") 
 
-npg <- broadSeq::genes_plot(smrExpt[,smrExpt$species == "Mouse"], 
-                     features = c("Shh"), facet.by = "symbol",y = "logCPM",
+npg <- broadSeq::genes_plot(se[,se$species == "Mouse"], 
+                     features = c("Shh"), facet.by = "symbol",assayName =  "logCPM",
                      x = "stage", fill="stage", add="dotplot", xlab = "",
                      title = "Nature Publishing Group", palette = "npg") 
 
-aaas <- broadSeq::genes_plot(smrExpt[,smrExpt$species == "Mouse"], 
-                     features = c("Shh"), facet.by = "symbol", y = "logCPM",
+aaas <- broadSeq::genes_plot(se[,se$species == "Mouse"], 
+                     features = c("Shh"), facet.by = "symbol", assayName = "logCPM",
                      x = "stage", fill="stage", add="dotplot", xlab = "",
                      title = "Science", palette = "aaas")
 
-nejm <- broadSeq::genes_plot(smrExpt[,smrExpt$species == "Mouse"], 
-                     features = c("Shh"), facet.by = "symbol", y = "logCPM",
+nejm <- broadSeq::genes_plot(se[,se$species == "Mouse"], 
+                     features = c("Shh"), facet.by = "symbol", assayName = "logCPM",
                      x = "stage", fill="stage", add="dotplot",  xlab = "",
                      title = "New England Journal of Medicine",palette = "nejm")
 
@@ -228,7 +226,7 @@ ggarrange(jco+ggpubr::rotate_x_text(), npg+ggpubr::rotate_x_text(),
           aaas+ggpubr::rotate_x_text(),nejm+ggpubr::rotate_x_text(),
           nrow = 1, common.legend = TRUE,legend = "none",
           labels = c("A","B","C","D")) %>% 
-    annotate_figure( top = text_grob("Colorblindness")) 
+    annotate_figure( top = text_grob("Color palette")) 
 ```
 
 ## QC with Clustering
@@ -252,16 +250,16 @@ through package ´cmdscale {stats}´.
 as principal coordinates analysis (Gower, 1966). ]
 
 ```{r fig.height=6,fig.width=8}
-broadSeq::plot_MDS(smrExpt, scaledAssay = "vst", ntop=500, 
+broadSeq::plot_MDS(se, scaledAssay = "vst", ntop=500, 
                    color = "species", shape = "stage", 
                    ellipse=TRUE, legend = "bottom")
 ```
 
 MDS is cool but it is not possible to know/visualize top variable genes
-with their meta data which is stored in `smrExpt` object
+with their meta data which is stored in `se` object
 
 ```{r }
-head(rowData(smrExpt))
+head(rowData(se))
 ```
 
 Other methods can help to visualize gene information along with
@@ -271,13 +269,13 @@ clustering information.
 
 ```{r fig.height=6,fig.width=8}
 p_vst <- broadSeq::plotHeatmapCluster(
-    smrExpt,
+    se,
     scaledAssay = "vst",
     annotation_col = c("species", "stage"),
     annotation_row = c("Class","gene_biotype"),
-    ntop = 30,
+    ntop = 30, show_geneAs = "symbol",
     cluster_cols = TRUE, cluster_rows = FALSE,
-    show_rownames = FALSE, show_colnames = FALSE,
+    show_rownames = TRUE, show_colnames = FALSE,
     main = "Top 30 variable gene vst"
 )
 
@@ -302,9 +300,9 @@ objects:
     Compute PCA using any assay
 
 ```{r warning=FALSE}
-computedPCA_logCPM <- broadSeq::prcompTidy(smrExpt, scaledAssay = "logCPM", ntop = 500)
+computedPCA_logCPM <- broadSeq::prcompTidy(se, scaledAssay = "logCPM", ntop = 500)
 ## PCA based on vst values
-computedPCA_vst <- broadSeq::prcompTidy(smrExpt, scaledAssay = "vst", ntop = 500)
+computedPCA_vst <- broadSeq::prcompTidy(se, scaledAssay = "vst", ntop = 500)
 ```
 
 #### Plot
@@ -320,9 +318,10 @@ plotAnyPC(computedPCA = computedPCA_logCPM,
 ##### VST
 
 ```{r fig.width=8,fig.height=6}
-plotAnyPC(computedPCA = computedPCA_vst,
-          x = 1, y = 2,  color = "species", shape = "stage", 
-          legend = "bottom") 
+pca_vst <- plotAnyPC(computedPCA = computedPCA_vst,
+            x = 1, y = 2,  color = "species", shape = "stage", 
+            legend = "bottom") 
+pca_vst
 ```
 
 ##### Other PCs
@@ -338,9 +337,10 @@ variance. PC3 can be useful to see variance due to different
 developmental time points.
 
 ```{r fig.width=8,fig.height=6}
-plotAnyPC(computedPCA = computedPCA_vst,
-          x = 2, y = 3,  
-          color = "species", shape = "stage", legend = "bottom")
+pca_vst_2_3 <-plotAnyPC(computedPCA = computedPCA_vst,
+                x = 2, y = 3,  
+                color = "species", shape = "stage", legend = "bottom")
+# pca_vst_2_3
 ```
 
 PC3 captures beautifully the variance in gene expression due to
@@ -356,23 +356,34 @@ computedPCA_vst %>% broadSeq::getFeatureLoadRanking(keep = c("symbol","Class")) 
 
 computedPCA_vst$loadings %>% top_n(5,abs(PC2)  ) %>% dplyr::select(gene,PC2)
 
-computedPCA_vst %>% 
+pca_vst_loading <- computedPCA_vst %>% 
     broadSeq::getFeatureLoadRanking(keep = c("symbol","Class"), topN = 50, pcs=1:10) %>% 
     dplyr::count(Class, PC) %>%
     ggbarplot(
         x = "PC", y = "n", fill = "Class",
-        legend = "bottom", palette = "jco"
+        legend = "bottom", palette = c("red","blue","orange","white","grey")
     ) 
+# pca_vst_loading
 ```
 
 #### Biplot
 
 ```{r fig.width=8,fig.height=6}
 # By default it plots top 2 genes from each PC axis
-broadSeq::biplotAnyPC(computedPCA = computedPCA_vst, 
+pca_vst_bi <- broadSeq::biplotAnyPC(computedPCA = computedPCA_vst, 
             x = 1, y = 2, genesLabel = "symbol", 
             color = "species", shape = "stage", 
             legend = "bottom")
+# pca_vst_bi
+```
+
+
+```{r fig.width=8,fig.height=8}
+ggarrange(
+    ggarrange(pca_vst_bi+ggtitle(label =  ""),
+          pca_vst_2_3+ggtitle(label =  ""), common.legend = TRUE),
+    pca_vst_loading, nrow = 2)
+
 ```
 
 ##### To plot user defined genes

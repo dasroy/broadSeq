@@ -1,6 +1,6 @@
 Package: broadSeq
-Title: The user can try different methods easily for RNA-seq data analysis.
-Version: 0.0.8
+Title: broadSeq : for streamlined exploration of RNA-seq data
+Version: 0.0.9
 Authors@R: 
     person("Rishi", "Das Roy", , "rishi.dasroy@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3276-7279"))
@@ -15,7 +15,6 @@ RoxygenNote: 7.2.3
 Suggests: 
     knitr,
     limma (>= 3.54.0),
-    purrr (>= 0.3.5),
     rmarkdown,
     stats (>= 4.2.2),
     samr
@@ -36,6 +35,8 @@ Imports:
     clusterProfiler (>= 4.8.2),
     pheatmap,
     sechm (>= 1.6.0),
+    stringr,
+    purrr (>= 0.3.5),
     edgeR (>= 3.40.1)
 Remotes:  
     bioc::3.18/SummarizedExperiment,

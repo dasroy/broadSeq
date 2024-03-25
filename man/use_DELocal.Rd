@@ -2,13 +2,28 @@
 % Please edit documentation in R/wrappers.R
 \name{use_DELocal}
 \alias{use_DELocal}
-\title{Title}
+\title{To use SummarizedExperiment with package DELocal}
 \usage{
-use_DELocal(smrExpt, class_id, control, treatment, rank = FALSE, ...)
+use_DELocal(se, colData_id, control, treatment, rank = FALSE, ...)
 }
 \arguments{
-\item{...}{}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{colData_id}{One of the columns of colData(se). It should be factors of
+more than one value.}
+
+\item{control}{Base level and one of the factor values of \code{colData(se)[[colData_id]]}}
+
+\item{treatment}{one of the factor values of \code{colData(se)[[colData_id]]}}
+
+\item{rank}{Logical value default FALSE. If true the result will have an
+additional column named "rank" and the results are ranked on "relative.logFC"}
+
+\item{...}{other arguments to be passed to main function DELocal::\code{\link{DELocal}}.}
+}
+\value{
+a data.frame from DELocal
 }
 \description{
-Title
+A wrapper function of DELocal where input is an object of \code{\link{SummarizedExperiment}}
 }

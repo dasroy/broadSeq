@@ -2,13 +2,13 @@
 % Please edit documentation in R/clusteringVisualization.R
 \name{plotHeatmapCluster}
 \alias{plotHeatmapCluster}
-\title{plotHeatmapCluster integrates SummarizedExperiment with pheatmap and return object as ggplot}
+\title{Plot clustered heatmaps}
 \usage{
 plotHeatmapCluster(
   se,
   scaledAssay = "vst",
   ntop = 500L,
-  genes = NULL,
+  features = NULL,
   show_geneAs = NULL,
   annotation_col = NA,
   annotation_row = NA,
@@ -16,8 +16,39 @@ plotHeatmapCluster(
 )
 }
 \arguments{
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{scaledAssay}{an scaled assay name from SummarizedExperiment::assayNames(se)}
+
+\item{ntop}{number of most-variable genes to select. Igored if "features" is specified.}
+
+\item{features}{character vector features/genes to be used to measure distance between the samples}
+
+\item{show_geneAs}{a character vector of colnames of rowData(se)}
+
 \item{annotation_col}{a character vector of colnames of colData(se)}
+
+\item{annotation_row}{a list of character vector of colnames of rowData(se)}
+
+\item{...}{other arguments like color or shape whose values should be similar
+to colData columns names passed to \code{\link{pheatmap}}}
 }
 \description{
-plotHeatmapCluster integrates SummarizedExperiment with pheatmap and return object as ggplot
+Plot clustered heatmaps from SummarizedExperiment with pheatmap and return object as ggplot
+}
+\examples{
+se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+
+se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+
+broadSeq::plotHeatmapCluster(
+    se,
+    scaledAssay = "logCPM",
+    annotation_col = c("species", "stage"),
+    annotation_row = c("Class","gene_biotype"),
+    ntop = 30, show_geneAs = "symbol",
+    cluster_cols = TRUE, cluster_rows = FALSE,
+    show_rownames = TRUE, show_colnames = FALSE,
+    main = "Top 30 variable gene vst"
+)
 }

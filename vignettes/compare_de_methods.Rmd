@@ -29,7 +29,7 @@ In this vignette, the easy use of broadSeq to identify differentially expressed(
 In this example we will use RNA-seq expression data from developing mouse molar tissue. First we read the data as a `SummarizedExperiment` object. 
 
 ```{r warning=FALSE,eval=TRUE}
-smrExpt <- readRDS(system.file("extdata",
+se <- readRDS(system.file("extdata",
                                "mouseSE_dev_tooth_count_length_geneData.rds",
                                # "mouseSE_dev_tooth_count_length.rds", 
                                package = "broadSeq"))
@@ -46,7 +46,7 @@ gene_location <- read.table(file = system.file("extdata",
                                               "gene_location.txt", 
                                               package = "DELocal"))
 
-smrExpt <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=count_matrix),
+se <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=count_matrix),
                                                       rowData = gene_location, 
                                                       colData=colData)
 # contrast= c("condition","ME13","ME14")
@@ -55,7 +55,7 @@ smrExpt <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=count_m
 ### Gene information
 
 ```{r warning=FALSE}
-head(rownames(smrExpt))
+head(rownames(se))
 ```
 
 The gene ids are in ensemble format. For easy readability, information about genes can be fetched through `biomaRt` package as shown below.
@@ -70,23 +70,23 @@ ensembl_ms_mart <- useMart(biomart="ENSEMBL_MART_ENSEMBL",
 gene_attributes<- c("ensembl_gene_id", "mgi_symbol",
                     "start_position", "chromosome_name","gene_biotype")
 gene_location_sample <- getBM(attributes=gene_attributes, filters = "ensembl_gene_id",
-                              values = rownames(smrExpt),uniqueRows = TRUE,
+                              values = rownames(se),uniqueRows = TRUE,
                               mart=ensembl_ms_mart,verbose = FALSE,useCache = TRUE)
 
 # remove rows with duplicate ensembl_gene_id
 gene_location_sample <- gene_location_sample[!duplicated(gene_location_sample$ensembl_gene_id),]
 # some ensembl_gene_id may not be found in biomart
 # remove those ensembl_gene_id s
-smrExpt <- smrExpt[gene_location_sample$ensembl_gene_id,]
+se <- se[gene_location_sample$ensembl_gene_id,]
 
 rownames(gene_location_sample) <- gene_location_sample$ensembl_gene_id
-rowData(smrExpt) <- gene_location_sample[rownames(smrExpt),]
+rowData(se) <- gene_location_sample[rownames(se),]
 ```
 
 Finally the gene information is stored and can be accessed through rowData funtion  
 
 ```{r warning=FALSE,eval=FALSE}
-head(rowData(smrExpt))
+head(rowData(se))
 ```
 
 ### Sample information  
@@ -94,8 +94,8 @@ head(rowData(smrExpt))
 The sample metadata  
 
 ```{r warning=FALSE,eval=TRUE}
-head(colData(smrExpt))
-table(colData(smrExpt)$stage)
+head(colData(se))
+table(colData(se)$stage)
 ```
 <!-- There are two biological conditions ME13 and ME14 (embryonic days 13 and 14) with seven replicates each. The relevant question is which genes are differentially expressed between these two developmental time points. -->
 
@@ -111,8 +111,8 @@ Here we will see `use_NOIseq()` method to apply `NOISeq::noiseqbio()` function.
 
 ```{r warning=FALSE,fig.width=6,fig.height=6,message=FALSE}
 result_Noiseq <- 
-    use_NOIseq(smrExpt = smrExpt, 
-           class_id = "stage", control = "Bud", treatment = "Cap",
+    use_NOIseq(se = se, 
+           colData_id = "stage", control = "Bud", treatment = "Cap",
            rank = TRUE, 
            r = 10) # r is an argument of NOISeq::noiseqbio
 
@@ -129,7 +129,7 @@ head(result_Noiseq)
 # broadSeq::genes_plot function internally converts SummarizedExperiment to use
 # ggpubr::ggboxplot 
 
-pg <- broadSeq::genes_plot(smrExpt, x = "stage", y = "counts",  
+pg <- broadSeq::genes_plot(se, x = "stage", assayName =  "counts",  
            features = result_Noiseq %>% dplyr::filter(rank <5) %>% rownames(),
            fill="stage", facet.by = "mgi_symbol",
            palette="jco", add = "dotplot")+rotate_x_text()
@@ -149,27 +149,27 @@ pg+pg_sc
 Following implementations of popular methods are available here.
 ```{r warning=FALSE,results="hide", fig.keep = "none"}
 # limma 
-?use_limma_trend(smrExpt, class_id, control, treatment, rank = FALSE, ...)
-?use_limma_voom(smrExpt, class_id, control, treatment, rank = FALSE, ...)
+?use_limma_trend(se, colData_id, control, treatment, rank = FALSE, ...)
+?use_limma_voom(se, colData_id, control, treatment, rank = FALSE, ...)
 
 # edgeR 
-?use_edgeR_exact(smrExpt, class_id, control, treatment, rank = FALSE, ...)
-?use_edgeR_GLM(smrExpt, class_id, control, treatment, rank = FALSE, ...)
+?use_edgeR_exact(se, colData_id, control, treatment, rank = FALSE, ...)
+?use_edgeR_GLM(se, colData_id, control, treatment, rank = FALSE, ...)
 
 # deseq2
-?use_deseq2(smrExpt, class_id, control, treatment, rank = FALSE, ...)
+?use_deseq2(se, colData_id, control, treatment, rank = FALSE, ...)
 
 # DELocal
-?use_DELocal(smrExpt, class_id, control, treatment, rank = FALSE, ...)
+?use_DELocal(se, colData_id, control, treatment, rank = FALSE, ...)
 
 # noiseq
-?use_NOIseq(smrExpt, class_id, control, treatment, rank = FALSE, ...) 
+?use_NOIseq(se, colData_id, control, treatment, rank = FALSE, ...) 
 
 # EBSeq 
-?use_EBSeq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
+?use_EBSeq(se, colData_id, control, treatment, rank = FALSE, ...)
 
 # samseq
-?use_SAMseq(smrExpt, class_id, control, treatment, rank = FALSE, ...)
+?use_SAMseq(se, colData_id, control, treatment, rank = FALSE, ...)
 ```
 
 Advanced users can pass package specific arguments through '...' .
@@ -189,17 +189,17 @@ funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
 
 
 multi_result <- broadSeq::use_multDE(
-    smrExpt = smrExpt[rowData(smrExpt)$chromosome_name == 5,], 
+    se = se[rowData(se)$chromosome_name == 5,], 
     deFun_list = funs, return.df = TRUE,  
-    class_id = "stage", control = "Bud", treatment = "Cap", 
+    colData_id = "stage", control = "Bud", treatment = "Cap", 
     rank = TRUE)
 ```
 
 The column names of the resultant data.frame are prefixed with corresponding function names. 
 
-```{r warning=FALSE,eval=FALSE}
+```{r warning=FALSE}
 head(multi_result)
-# nrow(multi_result) == nrow(smrExpt)
+# nrow(multi_result) == nrow(se)
 colnames(multi_result)
 ```
 
@@ -244,11 +244,11 @@ multi_result %>% broadSeq::volcanoPlot(
 ```
 
 <!-- #### Boxplot -->
-```{r warning=FALSE,fig.width=6,fig.height=6,eval=FALSE}
+```{r warning=FALSE,fig.width=6,fig.height=6,eval=FALSE,echo=FALSE}
 multi_result %>% dplyr::arrange(deseq2_padj) %>% pull(ensembl_gene_id) %>% head()
-genes_plot(smrExpt, features = c("ENSMUSG00000035095","ENSMUSG00000037217"),
+genes_plot(se, features = c("ENSMUSG00000035095","ENSMUSG00000037217"),
            x = "condition", y = "counts", add = "dotplot",palette = "npg")
-genes_plot(smrExpt, features = c("ENSMUSG00000035095","ENSMUSG00000037217"),
+genes_plot(se, features = c("ENSMUSG00000035095","ENSMUSG00000037217"),
            x = "condition", y = "counts", fill="condition", add = "jitter",palette = "npg")
 ```
 
@@ -274,15 +274,15 @@ only_delocal_gene <- multi_result %>% dplyr::filter(DE_method=="DELocal") %>%
     arrange(DELocal_rank) %>% pull(ensembl_gene_id)
 
 # needs to implement using ggpubr
-DELocal::plotNeighbourhood(pSmrExpt = smrExpt,pDesign = ~ condition, 
+DELocal::plotNeighbourhood(pse = se,pDesign = ~ condition, 
                                  pGene_id = only_delocal_gene[1])$plot + 
   labs(title = names(only_delocal_gene[1]))
 
-DELocal::plotNeighbourhood(pSmrExpt = smrExpt,pDesign = ~ condition, 
+DELocal::plotNeighbourhood(pse = se,pDesign = ~ condition, 
                                  pGene_id = only_delocal_gene[2])$plot + 
   labs(title = names(only_delocal_gene[2]))
 
-DELocal::plotNeighbourhood(pSmrExpt = smrExpt,pDesign = ~ condition, 
+DELocal::plotNeighbourhood(pse = se,pDesign = ~ condition, 
                                  pGene_id = only_delocal_gene[3])$plot + 
   labs(title = names(only_delocal_gene[3]))
 
@@ -299,14 +299,14 @@ top_delocal_high_dev_gene <- multi_result[high_dev_gene,] %>% dplyr::select(ends
   arrange(DELocal_rank) %>% rownames() 
 
 for (gene in head(top_delocal_high_dev_gene)) {
- DELocal::plotNeighbourhood(pSmrExpt = smrExpt,pDesign = ~ condition, pGene_id = gene)$plot %>% print()
+ DELocal::plotNeighbourhood(pse = se,pDesign = ~ condition, pGene_id = gene)$plot %>% print()
 }
 
 pdf("high_devolopmental_genePlots.pdf")
 for (gene in top_delocal_high_dev_gene) {
   # x <- multi_result[gene,] %>% dplyr::select(c(other_cols,distinct_ranks)) %>% round(digits = 4)
   # paste(names(x), x, sep = ":", collapse = "\n")
- DELocal::plotNeighbourhood(pSmrExpt = smrExpt,pDesign = ~ condition, pGene_id = gene)$plot %>% print()
+ DELocal::plotNeighbourhood(pse = se,pDesign = ~ condition, pGene_id = gene)$plot %>% print()
 }
 dev.off()
 ```
@@ -320,7 +320,7 @@ delocal_dev_choice <- rnaSeq_median_xprsn_devGenes %>%
 DELocal_result[rnaSeq_median_xprsn_devGenes$ENSEMBL,] %>% arrange(rank) %>% head()
 
 rnaSeq_median_xprsn %>% filter(ENSEMBL=="ENSMUSG00000024598")
-gPlot <- DELocal:::plotNeighbourhood(smrExpt,pDesign = ~ condition, pGene_id = "ENSMUSG00000024598")
+gPlot <- DELocal:::plotNeighbourhood(se,pDesign = ~ condition, pGene_id = "ENSMUSG00000024598")
 
 rnaSeq_median_xprsn_devGenes %>% ggplot(aes(rnaSeq_median_E13_Tooth,rnaSeq_median_E14_Tooth,label=SYMBOL)) + 
   geom_point()+ 
@@ -333,3 +333,12 @@ rnaSeq_median_xprsn_devGenes %>% ggplot(aes(rnaSeq_median_E13_Tooth,rnaSeq_media
     direction     = "x"
 )
 ```
+
+
+<details>
+<summary>sessionInfo</summary>
+
+```{r echo=FALSE,message=FALSE,warning=FALSE,error=FALSE}
+sessionInfo()
+```
+</details>
