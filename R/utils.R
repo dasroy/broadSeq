@@ -16,7 +16,7 @@ checkNameSpace <- function(packageName) {
 #' @param assayName One of the values from SummarizedExperiment::assayNames(se)
 #' @param ... other arguments to be passed to ggpubr::\code{\link{ggboxplot}}
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #' @importFrom ggpubr ggboxplot rotate_x_text
 #' @importFrom sechm meltSE
@@ -53,7 +53,7 @@ sampleAssay_plot <- function(se, assayName = "counts",...){
 #' @param x a column name of colData which will be used in x-axis
 #' @param ... other arguments to be passed to ggpubr::\code{\link{ggboxplot}}
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #' @importFrom ggpubr ggboxplot facet
 #' @importFrom dplyr filter
@@ -204,15 +204,17 @@ combinedEnrichment <- function(DEG_table, geneCol = "ID", logCol = "logFoldChang
     return(list(gseResult=gseResult, oraUP= oraUP, oraDOWN = oraDOWN))
 }
 
-#' Applies round function on numeric columns of a data.frame.
+#' Applies round function only on numeric columns of a data.frame.
 #'
-#' @param df
-#' @param digits
+#' @param df data.frame object
+#' @param digits passed to \code{\link{round}}
 #'
-#' @return
+#' @return data.frame object
 #' @export
 #'
 #' @examples
+#' data("iris")
+#' iris %>% round_df(digits = 0) %>% head()
 round_df <- function(df, digits) {
     nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
     df[,nums] <- round(df[,nums], digits = digits)

@@ -15,9 +15,10 @@ use_multDE(
 )
 }
 \arguments{
-\item{deFun_list}{a list of funtion which can perform differential expression analysis}
+\item{deFun_list}{a list of function which can perform differential expression analysis}
 
-\item{return.df}{wheter to return all results aggregated form of data.frame}
+\item{return.df}{whether to return all results aggregated form of data.frame or
+a list of results. Default is FALSE}
 
 \item{se}{Object of \code{\link{SummarizedExperiment}} class}
 
@@ -27,8 +28,34 @@ use_multDE(
 
 \item{treatment}{one of the factor values of \code{colData(se)[[colData_id]]}}
 
-\item{...}{}
+\item{...}{other arguments to be passed to functions listed in deFun_list}
+}
+\value{
+a list or data.frame
 }
 \description{
 To identify differentially expressed genes by multiple methods
+}
+\examples{
+
+se <- readRDS(system.file("extdata",
+        "mouseSE_dev_tooth_count_length_geneData.rds",
+        package = "broadSeq"))
+
+# To reduce runtime
+se = se[rowData(se)$chromosome_name == 5,]
+
+# First define a named list of functions
+funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
+             edgeR_exact = use_edgeR_exact, edgeR_glm = use_edgeR_GLM,
+             deseq2 = use_deseq2,
+             DELocal = use_DELocal, noiseq = use_NOIseq,
+             EBSeq = use_EBSeq)
+
+
+multi_result <- broadSeq::use_multDE(
+    se = se[rowData(se)$chromosome_name == 5,],
+    deFun_list = funs, return.df = TRUE,
+    colData_id = "stage", control = "Bud", treatment = "Cap",
+    rank = TRUE)
 }

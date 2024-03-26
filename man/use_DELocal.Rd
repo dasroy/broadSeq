@@ -27,3 +27,17 @@ a data.frame from DELocal
 \description{
 A wrapper function of DELocal where input is an object of \code{\link{SummarizedExperiment}}
 }
+\examples{
+
+se <- readRDS(system.file("extdata",
+        "mouseSE_dev_tooth_count_length_geneData.rds",
+        package = "broadSeq"))
+
+# To reduce runtime
+se = se[rowData(se)$chromosome_name == 5,]
+
+result <-
+    use_DELocal(se = se,
+           colData_id = "stage", control = "Bud", treatment = "Cap",
+           rank = TRUE)
+}

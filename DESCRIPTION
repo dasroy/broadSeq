@@ -9,9 +9,12 @@ Description: This package helps user to do easily RNA-seq data analysis with mul
     provid the expression data as a SummarizedExperiment object and will get results 
     from different methods. It will help user to quickly evaluate different methods. 
 License: MIT + file LICENSE
+URL: https://github.com/dasroy/broadSeq
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+biocViews: GeneExpression, DifferentialExpression, RNASeq, 
+        Transcriptomics
 Suggests: 
     knitr,
     limma (>= 3.54.0),
@@ -38,14 +41,4 @@ Imports:
     stringr,
     purrr (>= 0.3.5),
     edgeR (>= 3.40.1)
-Remotes:  
-    bioc::3.18/SummarizedExperiment,
-    bioc::3.18/sechm,
-    bioc::3.18/limma,
-    bioc::3.18/clusterProfiler,
-    bioc::3.18/EBSeq,
-    bioc::3.18/DESeq2,
-    bioc::3.18/NOISeq,
-    bioc::3.18/DELocal,
-    bioc::3.18/genefilter
 VignetteBuilder: knitr

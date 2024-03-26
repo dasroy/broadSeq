@@ -36,21 +36,34 @@ use_limma(
 \item{rank}{Logical value default FALSE. If true the result will have an
 additional column named "rank"}
 
-\item{...}{other arguments to be passed to main function edgeR::\code{\link{calcNormFactors}}.}
+\item{...}{other arguments to be passed to main function edgeR::calcNormFactors .}
 
-\item{useVoom}{whether to use limma::\code{\link{voom}} or edgeR::\code{\link{cpm}}}
+\item{useVoom}{whether to use limma::voom or edgeR::cpm}
 
-\item{showPlot}{whether to use limma::\code{\link{plotSA}}; default FALse}
+\item{showPlot}{whether to use limma::plotSA ; default FALSE}
 
-\item{limma.adjust}{argument for limma::\code{\link{topTable}}}
+\item{limma.adjust}{argument for limma::topTable}
 
-\item{limma.sort.by}{argument for limma::\code{\link{topTable}}}
+\item{limma.sort.by}{argument for limma::topTable}
 
-\item{limma.number}{argument for limma::\code{\link{topTable}}}
+\item{limma.number}{argument for limma::topTable}
 }
 \value{
-a data.frame of output from limma::\code{\link{topTable}}
+a data.frame of output from limma::topTable
 }
 \description{
 A wrapper function of limma where input is an object of \code{\link{SummarizedExperiment}}
+}
+\examples{
+
+se <- readRDS(system.file("extdata",
+        "mouseSE_dev_tooth_count_length_geneData.rds",
+        package = "broadSeq"))
+
+# To reduce runtime
+se = se[rowData(se)$chromosome_name == 5,]
+result <-
+    use_limma(se = se,
+           colData_id = "stage", control = "Bud", treatment = "Cap",
+           rank = TRUE)
 }

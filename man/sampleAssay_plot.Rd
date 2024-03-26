@@ -14,6 +14,9 @@ sampleAssay_plot(se, assayName = "counts", ...)
 
 \item{...}{other arguments to be passed to ggpubr::\code{\link{ggboxplot}}}
 }
+\value{
+ggplot object
+}
 \description{
 Useful to visualize distribution of assay values for each sample. Plots 'boxplot'
 of any assay for each sample. Aesthetic can be added from colData.

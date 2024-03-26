@@ -34,18 +34,29 @@ use_limma_voom <- function(se, colData_id, control, treatment,rank=FALSE,...){
 #' @param treatment one of the factor values of `colData(se)[[colData_id]]`
 #' @param rank Logical value default FALSE. If true the result will have an
 #' additional column named "rank"
-#' @param useVoom whether to use limma::\code{\link{voom}} or edgeR::\code{\link{cpm}}
-#' @param showPlot whether to use limma::\code{\link{plotSA}}; default FALse
-#' @param ... other arguments to be passed to main function edgeR::\code{\link{calcNormFactors}}.
-#' @param limma.adjust argument for limma::\code{\link{topTable}}
-#' @param limma.sort.by argument for limma::\code{\link{topTable}}
-#' @param limma.number argument for limma::\code{\link{topTable}}
+#' @param useVoom whether to use limma::voom or edgeR::cpm
+#' @param showPlot whether to use limma::plotSA ; default FALSE
+#' @param ... other arguments to be passed to main function edgeR::calcNormFactors .
+#' @param limma.adjust argument for limma::topTable
+#' @param limma.sort.by argument for limma::topTable
+#' @param limma.number argument for limma::topTable
 #'
-#' @return a data.frame of output from limma::\code{\link{topTable}}
+#' @return a data.frame of output from limma::topTable
 #'
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
+#'
+#' se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' # To reduce runtime
+#' se = se[rowData(se)$chromosome_name == 5,]
+#' result <-
+#'     use_limma(se = se,
+#'            colData_id = "stage", control = "Bud", treatment = "Cap",
+#'            rank = TRUE)
 use_limma <- function(se, colData_id, control, treatment,
                       rank=FALSE, useVoom=TRUE, showPlot=FALSE,
                       limma.adjust="BH", limma.sort.by = "p", limma.number=Inf,
@@ -125,9 +136,9 @@ use_edgeR_exact <- function(se, colData_id, control, treatment, rank=FALSE,...){
 #' @param treatment one of the factor values of `colData(se)[[colData_id]]`
 #' @param rank Logical value default FALSE. If true the result will have an
 #' additional column named "rank"
-#' @param edgeR.n argument for edgeR::\code{\link{ntopTags}}
-#' @param edgeR.adjust.method argument for edgeR::\code{\link{ntopTags}}
-#' @param edgeR.sort.by argument for edgeR::\code{\link{ntopTags}}
+#' @param edgeR.n argument for edgeR::\code{\link{topTags}}
+#' @param edgeR.adjust.method argument for edgeR::\code{\link{topTags}}
+#' @param edgeR.sort.by argument for edgeR::\code{\link{topTags}}
 #' @param option "GLM" or "exact" to indicate to use either edgeR::\code{\link{glmLRT}}
 #' or edgeR::\code{\link{exactTest}}
 #' @param ... other arguments to be passed to edgeR::\code{\link{glmLRT}}
@@ -135,8 +146,19 @@ use_edgeR_exact <- function(se, colData_id, control, treatment, rank=FALSE,...){
 #'
 #' @return a data.frame of output from edgeR::\code{\link{topTags}}
 #' @export
-#'
 #' @examples
+#'
+#' se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' # To reduce runtime
+#' se = se[rowData(se)$chromosome_name == 5,]
+#'
+#' result <-
+#'     use_edgeR(se = se,
+#'            colData_id = "stage", control = "Bud", treatment = "Cap",
+#'            rank = TRUE)
 use_edgeR <- function(se, colData_id, control, treatment, rank=FALSE,
                       edgeR.n = Inf, edgeR.adjust.method = "BH", edgeR.sort.by = "PValue",
                       option="GLM",...){
@@ -168,7 +190,7 @@ use_edgeR <- function(se, colData_id, control, treatment, rank=FALSE,
     }else if(option=="exact"){
         ##Estimate dispersion
         dt$samples$group <- condition
-        d1 <- edgeR::estimateCommonDisp(dt, verbose=T)
+        d1 <- edgeR::estimateCommonDisp(dt, verbose=TRUE)
         d1 <- edgeR::estimateTagwiseDisp(d1)
         ##Compare groups (exact test)
         t12 <- edgeR::exactTest(d1, pair=c(1,2),...)
@@ -199,7 +221,19 @@ use_edgeR <- function(se, colData_id, control, treatment, rank=FALSE,
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
- use_deseq2 <- function(se, colData_id, control, treatment,rank=FALSE,...){
+#'
+#' se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' # To reduce runtime
+#' se = se[rowData(se)$chromosome_name == 5,]
+#'
+#' result <-
+#'     use_deseq2(se = se,
+#'            colData_id = "stage", control = "Bud", treatment = "Cap",
+#'            rank = TRUE)
+use_deseq2 <- function(se, colData_id, control, treatment,rank=FALSE,...){
     checkNameSpace("DESeq2")
      if (SummarizedExperiment::assayNames(se)[1] != "counts") {
          nuOrder <-
@@ -248,6 +282,18 @@ use_edgeR <- function(se, colData_id, control, treatment, rank=FALSE,
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
+#'
+#' se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' # To reduce runtime
+#' se = se[rowData(se)$chromosome_name == 5,]
+#'
+#' result <-
+#'     use_DELocal(se = se,
+#'            colData_id = "stage", control = "Bud", treatment = "Cap",
+#'            rank = TRUE)
 use_DELocal <- function(se, colData_id, control, treatment,rank=FALSE,...){
     checkNameSpace("DELocal")
     formula_str <- paste("formula( ~ ",colData_id, ")", sep = "")
@@ -290,6 +336,18 @@ use_DELocal <- function(se, colData_id, control, treatment,rank=FALSE,...){
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
+#'
+#' se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' # To reduce runtime
+#' se = se[rowData(se)$chromosome_name == 5,]
+#'
+#' result <-
+#'     use_EBSeq(se = se,
+#'            colData_id = "stage", control = "Bud", treatment = "Cap",
+#'            rank = TRUE)
 use_EBSeq <- function(se, colData_id, control, treatment, rank=FALSE,...){
     checkNameSpace("EBSeq")
     control_names <- se[,se[[colData_id]]==control] %>% colnames()
@@ -341,6 +399,19 @@ use_EBSeq <- function(se, colData_id, control, treatment, rank=FALSE,...){
 #' @export
 #' @importFrom dplyr %>% left_join
 #' @examples
+#'
+#' se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' # To reduce runtime
+#' se = se[rowData(se)$chromosome_name == 5,]
+#'
+#' result_Noiseq <-
+#'     use_NOIseq(se = se,
+#'            colData_id = "stage", control = "Bud", treatment = "Cap",
+#'            rank = TRUE,
+#'            r = 10) # r is an argument of NOISeq::noiseqbio
 use_NOIseq <- function(se, colData_id, control, treatment, rank=FALSE, ...){
     control_names <- se[,se[[colData_id]]==control] %>% colnames()
     treatment_names <- se[,se[[colData_id]]==treatment] %>% colnames()
@@ -367,20 +438,19 @@ use_NOIseq <- function(se, colData_id, control, treatment, rank=FALSE, ...){
 
 #' To use SummarizedExperiment with package samr
 #'
-#' samr package is not installable as package 'impute' is not available. Please
-#' install this package manually before using this. It may be removed from future release
 #'
-#' @param se
-#' @param colData_id
-#' @param control
-#' @param treatment
-#' @param rank
-#' @param ...
+#' @param se Object of \code{\link{SummarizedExperiment}} class
+#' @param colData_id One of the columns of colData(se). It should be factors of more than one value.
+#' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
+#' @param treatment one of the factor values of `colData(se)[[colData_id]]`
+#' @param rank Logical value default FALSE. If true the result will have an
+#' @param ... other arguments to be passed to samr::SAMseq
 #'
-#' @return
+#' @return a data.frame object as a result
 #' @importFrom dplyr %>% left_join
 #' @importFrom stringr str_remove
 #' @examples
+#'
 use_SAMseq <- function(se, colData_id, control, treatment,rank = FALSE,...){
     checkNameSpace("samr")
     control_names <- se[,se[[colData_id]]==control] %>% colnames()
@@ -393,7 +463,7 @@ use_SAMseq <- function(se, colData_id, control, treatment,rank = FALSE,...){
     # it uses cat() for lots of text, annoying
     samfit <- samr::SAMseq(tabla, y, resp.type = "Two class unpaired",
                            geneid = rownames(tabla), genenames = rownames(tabla),
-                           random.seed=1, fdr.output = 1)
+                           random.seed=1, fdr.output = 1,...)
     if(is.null(samfit$siggenes.table$genes.up) & is.null(samfit$siggenes.table$genes.lo)){
         return(NULL)
     }else if(is.null(samfit$siggenes.table$genes.up)) {
@@ -430,19 +500,41 @@ use_SAMseq <- function(se, colData_id, control, treatment,rank = FALSE,...){
 
 #' To identify differentially expressed genes by multiple methods
 #'
-#' @param deFun_list a list of funtion which can perform differential expression analysis
-#' @param return.df wheter to return all results aggregated form of data.frame
+#' @param deFun_list a list of function which can perform differential expression analysis
+#' @param return.df whether to return all results aggregated form of data.frame or
+#' a list of results. Default is FALSE
 #' @param se Object of \code{\link{SummarizedExperiment}} class
 #' @param colData_id One of the columns of colData(se). It should be factors of more than one value.
 #' @param control Base level and one of the factor values of `colData(se)[[colData_id]]`
 #' @param treatment one of the factor values of `colData(se)[[colData_id]]`
-#' @param ...
+#' @param ... other arguments to be passed to functions listed in deFun_list
 #'
 #' @importFrom purrr reduce
-#' @return
+#' @return a list or data.frame
 #' @export
 #'
 #' @examples
+#'
+#' se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' # To reduce runtime
+#' se = se[rowData(se)$chromosome_name == 5,]
+#'
+#' # First define a named list of functions
+#' funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
+#'              edgeR_exact = use_edgeR_exact, edgeR_glm = use_edgeR_GLM,
+#'              deseq2 = use_deseq2,
+#'              DELocal = use_DELocal, noiseq = use_NOIseq,
+#'              EBSeq = use_EBSeq)
+#'
+#'
+#' multi_result <- broadSeq::use_multDE(
+#'     se = se[rowData(se)$chromosome_name == 5,],
+#'     deFun_list = funs, return.df = TRUE,
+#'     colData_id = "stage", control = "Bud", treatment = "Cap",
+#'     rank = TRUE)
 use_multDE <- function(deFun_list, return.df= FALSE ,se ,
                        colData_id , control , treatment , ... ) {
     wrap_it <- function( f, ...) {
@@ -480,18 +572,19 @@ use_multDE <- function(deFun_list, return.df= FALSE ,se ,
     return(y)
 }
 
-#' Title
+#' Volcano plot with formatted x and y axis label.
 #'
-#' @param df
-#' @param pValName
-#' @param lFCName
-#' @param sigThreshold
-#' @param logFCThreshold
-#' @param labelName
-#' @param selectedLabel
-#' @param palette one of "npg" ,"aaas", "lancet", "jco", "ucscgb", "uchicago", "simpsons" and "nejm" or similar to viridis::cividis(3)
+#' @param df a data.frame object
+#' @param pValName column name of df which provides p-values
+#' @param lFCName column name of df which provides log fold change values
+#' @param sigThreshold Threshold for p-values
+#' @param logFCThreshold Threshold for log fold change values
+#' @param labelName column name of df to label the dots
+#' @param selectedLabel which dots to highlight
+#' @param palette one of "npg" ,"aaas", "lancet", "jco", "ucscgb", "uchicago",
+#' "simpsons" and "nejm" or similar to viridis::cividis(3)
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #' @importFrom dplyr %>% left_join if_else
 #' @importFrom ggpubr ggscatter

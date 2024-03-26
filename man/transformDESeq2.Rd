@@ -24,3 +24,12 @@ is added to the input object.
 To use SummarizedExperiment with DESeq2, this function makes sure that 'counts'
 assay should be the first in assays list and the mode is integer.
 }
+\examples{
+ se <- readRDS(system.file("extdata",
+        "mouseSE_dev_tooth_count_length_geneData.rds",
+        package = "broadSeq"))
+
+se <- broadSeq::transformDESeq2(se,method = "vst"  )
+# The transformed values are added with the assay name "vst"
+SummarizedExperiment::assayNames(se)
+}

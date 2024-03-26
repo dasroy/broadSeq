@@ -80,10 +80,10 @@ SummarizedExperiment::assayNames(se)
 
 ### TMM
 
-'There is no such thing as a "TMM normalized count" because TMM
-normalizes the library sizes rather than the counts'
-[see](https://www.biostars.org/p/9475236/) from Gordon Smyth (edgeR
-developer).
+<!-- 'There is no such thing as a "TMM normalized count" because TMM -->
+<!-- normalizes the library sizes rather than the counts' -->
+<!-- [see](https://www.biostars.org/p/9475236/) from Gordon Smyth (edgeR -->
+<!-- developer). -->
 
 ```{r warning=FALSE,message=FALSE}
 se <- broadSeq::normalizeEdgerCPM(se , method = "TMM", cpm.log = FALSE )

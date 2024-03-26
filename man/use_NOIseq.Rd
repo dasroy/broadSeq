@@ -33,3 +33,18 @@ to get an eSet easily but then it will be hard to refer the treatment and contro
 The order of factors influence the log fold change sign. To keep it comparable
 to other methods the \code{NOISeq::readData()} is used internally.
 }
+\examples{
+
+se <- readRDS(system.file("extdata",
+        "mouseSE_dev_tooth_count_length_geneData.rds",
+        package = "broadSeq"))
+
+# To reduce runtime
+se = se[rowData(se)$chromosome_name == 5,]
+
+result_Noiseq <-
+    use_NOIseq(se = se,
+           colData_id = "stage", control = "Bud", treatment = "Cap",
+           rank = TRUE,
+           r = 10) # r is an argument of NOISeq::noiseqbio
+}

@@ -33,6 +33,9 @@ plotHeatmapCluster(
 \item{...}{other arguments like color or shape whose values should be similar
 to colData columns names passed to \code{\link{pheatmap}}}
 }
+\value{
+ggplot object
+}
 \description{
 Plot clustered heatmaps from SummarizedExperiment with pheatmap and return object as ggplot
 }

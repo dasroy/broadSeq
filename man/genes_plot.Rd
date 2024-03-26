@@ -32,6 +32,8 @@ where name is one of the column of rowdata.}
 value is "counts"}
 }
 \value{
+ggplot object
+
 return an object of class ggarrange, which is a ggplot or a list of ggplot.
 }
 \description{

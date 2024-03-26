@@ -38,11 +38,11 @@ additional column named "rank"}
 \item{...}{other arguments to be passed to edgeR::\code{\link{glmLRT}}
 or edgeR::\code{\link{exactTest}}}
 
-\item{edgeR.n}{argument for edgeR::\code{\link{ntopTags}}}
+\item{edgeR.n}{argument for edgeR::\code{\link{topTags}}}
 
-\item{edgeR.adjust.method}{argument for edgeR::\code{\link{ntopTags}}}
+\item{edgeR.adjust.method}{argument for edgeR::\code{\link{topTags}}}
 
-\item{edgeR.sort.by}{argument for edgeR::\code{\link{ntopTags}}}
+\item{edgeR.sort.by}{argument for edgeR::\code{\link{topTags}}}
 
 \item{option}{"GLM" or "exact" to indicate to use either edgeR::\code{\link{glmLRT}}
 or edgeR::\code{\link{exactTest}}}
@@ -52,4 +52,18 @@ a data.frame of output from edgeR::\code{\link{topTags}}
 }
 \description{
 A wrapper function of DESeq2 where input is an object of \code{\link{SummarizedExperiment}}
+}
+\examples{
+
+se <- readRDS(system.file("extdata",
+        "mouseSE_dev_tooth_count_length_geneData.rds",
+        package = "broadSeq"))
+
+# To reduce runtime
+se = se[rowData(se)$chromosome_name == 5,]
+
+result <-
+    use_edgeR(se = se,
+           colData_id = "stage", control = "Bud", treatment = "Cap",
+           rank = TRUE)
 }

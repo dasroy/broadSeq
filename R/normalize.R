@@ -12,6 +12,13 @@
 #' @import edgeR
 #'
 #' @examples
+#' se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' se <- broadSeq::normalizeEdgerCPM(se , method = "TMM", cpm.log = FALSE )
+#' # The normalized values are added with the assay name "TMM"
+#' SummarizedExperiment::assayNames(se)
 normalizeEdgerCPM <- function(se, method="TMM", cpm.log = TRUE, ...){
     stopifnot(is(se, "SummarizedExperiment"))
     x<- normLibSizes(se,method=method,...)
@@ -45,6 +52,13 @@ normalizeEdgerCPM <- function(se, method="TMM", cpm.log = TRUE, ...){
 #' @importFrom SummarizedExperiment assays
 #'
 #' @examples
+#'  se <- readRDS(system.file("extdata",
+#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         package = "broadSeq"))
+#'
+#' se <- broadSeq::transformDESeq2(se,method = "vst"  )
+#' # The transformed values are added with the assay name "vst"
+#' SummarizedExperiment::assayNames(se)
 transformDESeq2 <- function(se, method="vst", ...){
     stopifnot(is(se, "SummarizedExperiment"))
     stopifnot("method must be either vst or rlog"= (method %in% c("vst", "rlog","normTransform")))

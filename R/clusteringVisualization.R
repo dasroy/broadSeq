@@ -13,7 +13,7 @@
 #' @param ... other arguments like color or shape whose values should be similar
 #' to colData columns names passed to \code{\link{pheatmap}}
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #' @import pheatmap
 #' @importFrom ggplotify as.ggplot
@@ -94,10 +94,17 @@ plotHeatmapCluster <- function(se, scaledAssay="vst", ntop = 500L,
 #' @param ... other arguments like color or shape whose values should be similar
 #' to colData columns names passed to ggpubr::\code{\link{ggscatter}}
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #' @importFrom ggpubr ggscatter ggpar
 #' @examples
+#' se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+#'
+#' se <- broadSeq::transformDESeq2(se,method = "vst"  )
+#'
+#' broadSeq::plot_MDS(se, scaledAssay = "vst", ntop=500,
+#'                     color = "species", shape = "stage",
+#'                     ellipse=TRUE, legend = "bottom")
 plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, features = NULL,...){
     stopifnot(is(se, "SummarizedExperiment"))
     stopifnot("scaledAssay must be an assay of se"= (scaledAssay %in% assayNames(se)))
@@ -136,7 +143,9 @@ plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, features = NULL,...){
 #' loadings (eigen vectors) and the original data.
 #' @export
 #' @importFrom dplyr %>%
-#' @example
+#' @examples
+#' se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+#'
 #' se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
 #' computedPCA_logCPM <- broadSeq::prcompTidy(se, scaledAssay = "logCPM", ntop = 500)
 #'
@@ -148,6 +157,7 @@ plot_MDS <- function(se, scaledAssay="vst", ntop = 500L, features = NULL,...){
 #' computedPCA_logCPM$eigen_values %>%
 #'  dplyr::filter(var_exp >= 0.5) %>% # Selecting PC explaining more than 1% variance
 #'     ggbarplot(x="PC",y="var_exp", label = TRUE, label.pos = "out")
+#'
 prcompTidy <- function(se, scaledAssay="vst", ntop = 500L, features = NULL, ...){
     stopifnot(is(se, "SummarizedExperiment"))
     stopifnot("scaledAssay must be an assay of se"= (scaledAssay %in% assayNames(se)))
@@ -241,7 +251,7 @@ getSelectedGene <- function(genes, se, ntop, scaledAssay) {
 #' @param ... other arguments like color or shape whose values should be similar
 #' to colData columns names passed to ggpubr::\code{\link{ggscatter}}
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #'
 #' @importFrom ggpubr ggscatter ggpar
@@ -277,7 +287,7 @@ plotAnyPC <- function(computedPCA,x =1 ,y = 2, ...){
 #' @param ... other arguments like color or shape whose values should be similar
 #' to colData columns names passed to ggpubr::\code{\link{ggscatter}}
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #'
 #' @examples

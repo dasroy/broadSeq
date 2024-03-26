@@ -2,7 +2,7 @@
 % Please edit documentation in R/wrappers.R
 \name{volcanoPlot}
 \alias{volcanoPlot}
-\title{Title}
+\title{Volcano plot with formatted x and y axis label.}
 \usage{
 volcanoPlot(
   df,
@@ -16,8 +16,26 @@ volcanoPlot(
 )
 }
 \arguments{
-\item{palette}{one of "npg" ,"aaas", "lancet", "jco", "ucscgb", "uchicago", "simpsons" and "nejm" or similar to viridis::cividis(3)}
+\item{df}{a data.frame object}
+
+\item{pValName}{column name of df which provides p-values}
+
+\item{lFCName}{column name of df which provides log fold change values}
+
+\item{sigThreshold}{Threshold for p-values}
+
+\item{logFCThreshold}{Threshold for log fold change values}
+
+\item{labelName}{column name of df to label the dots}
+
+\item{selectedLabel}{which dots to highlight}
+
+\item{palette}{one of "npg" ,"aaas", "lancet", "jco", "ucscgb", "uchicago",
+"simpsons" and "nejm" or similar to viridis::cividis(3)}
+}
+\value{
+ggplot object
 }
 \description{
-Title
+Volcano plot with formatted x and y axis label.
 }

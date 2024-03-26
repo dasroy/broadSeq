@@ -47,6 +47,10 @@ to colData columns names passed to ggpubr::\code{\link{ggscatter}}}
 a list with four \code{data.frame} objects: pc_scores, eigen_values,
 loadings (eigen vectors) and the original data.
 
+ggplot object
+
+ggplot object
+
 a data.frame
 }
 \description{
@@ -55,4 +59,20 @@ This is more flexible for further custom PCA , biplot and exploring gene(factor)
 }
 \details{
 \href{https://gist.github.com/tavareshugo/5ca8a5e18fedc3f23f5ec4b09a9fc906}{Reused code}
+}
+\examples{
+se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+
+se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+computedPCA_logCPM <- broadSeq::prcompTidy(se, scaledAssay = "logCPM", ntop = 500)
+
+plotAnyPC(computedPCA = computedPCA_logCPM, x = 1, y = 2, color = "species",
+         shape = "stage",legend = "bottom")
+plotAnyPC(computedPCA = computedPCA_logCPM, x = 2, y = 3, color = "species",
+         shape = "stage",legend = "bottom")
+
+computedPCA_logCPM$eigen_values \%>\%
+ dplyr::filter(var_exp >= 0.5) \%>\% # Selecting PC explaining more than 1\% variance
+    ggbarplot(x="PC",y="var_exp", label = TRUE, label.pos = "out")
+
 }

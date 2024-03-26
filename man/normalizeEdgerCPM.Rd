@@ -22,3 +22,12 @@ is added to the input object.
 \description{
 Use of edgeR package to normalize count data
 }
+\examples{
+se <- readRDS(system.file("extdata",
+        "mouseSE_dev_tooth_count_length_geneData.rds",
+        package = "broadSeq"))
+
+se <- broadSeq::normalizeEdgerCPM(se , method = "TMM", cpm.log = FALSE )
+# The normalized values are added with the assay name "TMM"
+SummarizedExperiment::assayNames(se)
+}

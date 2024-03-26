@@ -18,6 +18,18 @@ plot_MDS(se, scaledAssay = "vst", ntop = 500L, features = NULL, ...)
 \item{...}{other arguments like color or shape whose values should be similar
 to colData columns names passed to ggpubr::\code{\link{ggscatter}}}
 }
+\value{
+ggplot object
+}
 \description{
 Classical multidimensional scaling is based on measuring the distance between the samples.
+}
+\examples{
+se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+
+se <- broadSeq::transformDESeq2(se,method = "vst"  )
+
+broadSeq::plot_MDS(se, scaledAssay = "vst", ntop=500,
+                    color = "species", shape = "stage",
+                    ellipse=TRUE, legend = "bottom")
 }

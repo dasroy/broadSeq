@@ -7,9 +7,21 @@
 use_SAMseq(se, colData_id, control, treatment, rank = FALSE, ...)
 }
 \arguments{
-\item{...}{}
+\item{se}{Object of \code{\link{SummarizedExperiment}} class}
+
+\item{colData_id}{One of the columns of colData(se). It should be factors of more than one value.}
+
+\item{control}{Base level and one of the factor values of \code{colData(se)[[colData_id]]}}
+
+\item{treatment}{one of the factor values of \code{colData(se)[[colData_id]]}}
+
+\item{rank}{Logical value default FALSE. If true the result will have an}
+
+\item{...}{other arguments to be passed to samr::SAMseq}
+}
+\value{
+a data.frame object as a result
 }
 \description{
-samr package is not installable as package 'impute' is not available. Please
-install this package manually before using this. It may be removed from future release
+To use SummarizedExperiment with package samr
 }
