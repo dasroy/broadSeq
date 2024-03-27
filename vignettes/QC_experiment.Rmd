@@ -361,7 +361,7 @@ pca_vst_loading <- computedPCA_vst %>%
     dplyr::count(Class, PC) %>%
     ggbarplot(
         x = "PC", y = "n", fill = "Class",
-        legend = "bottom", palette = c("red","blue","orange","white","grey")
+        legend = "bottom", palette = c("red","blue","orange","purple","white","grey")
     ) 
 # pca_vst_loading
 ```

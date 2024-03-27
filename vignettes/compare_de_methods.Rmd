@@ -31,8 +31,8 @@ In this example we will use RNA-seq expression data from developing mouse molar 
 ```{r warning=FALSE,eval=TRUE}
 se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
 
-# To reduce the runtime, subset of the data used here
-se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
+# To reduce the run time, subset of the data used here
+se <- se[,colData(se)$species == "Mouse"]
 ```
 
 
@@ -203,15 +203,9 @@ colnames(multi_result)
 
 DE methods are clustered based on their ranking of genes
 
-<!-- # saveRDS(multi_result,"multi_result.rds") -->
 ```{r warning=FALSE,fig.width=6,fig.height=6,eval=TRUE}
-# clusters <- multi_result %>% dplyr::select(ends_with("rank")) %>% arrange(DELocal_rank) %>% t() %>% dist() %>% hclust()
 clusters <- multi_result %>% dplyr::select(ends_with("rank")) %>% t() %>% dist() %>% hclust()
 plot(clusters,main =  "distance: Euclidean")
-
-clusters <- multi_result %>% dplyr::select(ends_with("rank")) %>% arrange(DELocal_rank) %>% t() %>% dist(method = "maximum") %>% hclust()
-plot(clusters,main =  "distance: maximum")
-
 ```
 
 ### Plots
@@ -225,7 +219,7 @@ multi_result %>% broadSeq::volcanoPlot(
     pValName = "deseq2_padj",
     lFCName = "deseq2_log2FoldChange",
     labelName = "symbol",
-    palette = c("purple","orange","grey"),
+    palette = "lancet" ,
     selectedLabel =
         multi_result %>% dplyr::arrange(deseq2_padj) %>% pull(symbol) %>% head()
 )
@@ -234,9 +228,9 @@ multi_result %>% broadSeq::volcanoPlot(
     pValName = "deseq2_padj",
     lFCName = "deseq2_log2FoldChange",
     labelName = "symbol",
-    palette = "lancet" ,
-    selectedLabel = list(criteria = "(`x` > 2 | `x` < -2) & (`y` > 10)")
-) 
+    palette = c("purple","orange","grey"),
+    selectedLabel = list(criteria = "(`x` > 5 | `x` < -2) & (`y` > 10)")
+) +xlim(-7.5,7.5)
 ```
 
 <!-- #### Boxplot -->
