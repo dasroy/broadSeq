@@ -58,22 +58,23 @@ sampleAssay_plot <- function(se, assayName = "counts",...){
 #' @importFrom ggpubr ggboxplot facet
 #' @importFrom dplyr filter
 #' @examples
-#' se <- readRDS(system.file("extdata", "mouseSE_dev_tooth_count_length_geneData.rds",
+#' se <- readRDS(system.file("extdata", "rat_vole_mouseSE_salmon.rds",
 #'     package = "broadSeq"))
 #' # The normalized values are added with the assay name "logCPM"
 #' se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
 #'
 #' broadSeq::genes_plot(se,
-#'                      features = c("ENSMUSG00000000003", "ENSMUSG00000000103"),
-#'                      facet.by = "mgi_symbol", # column of rowData
+#'                      features = list(mouse_gene_id = c("ENSMUSG00000022510" ,
+#'                                                         "ENSMUSG00000027985")),
+#'                      facet.by = "symbol", # column of rowData
 #'                      x = "stage",  fill="stage")
 #'
 #' broadSeq::genes_plot(se,
-#'                      features = list(mgi_symbol=c("Shh","Edar") ),
-#'                      facet.by = "mgi_symbol", # column of rowData
+#'                      features = list(symbol=c("Shh","Edar") ),
+#'                      facet.by = "symbol", # column of rowData
 #'                      x = "stage",  fill="stage")
 #'
-#'broadSeq::assay_plot(se, feature = c("ENSMUSG00000002633"),
+#'broadSeq::assay_plot(se, feature = c("Shh"),
 #'                     assays =  c("counts","logCPM"),
 #'                     x = "stage", fill="stage", add="dotplot", palette = "npg")
 genes_plot <- function(se, features, assayName = "counts", facet.by = "feature",

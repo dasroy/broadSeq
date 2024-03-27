@@ -24,7 +24,7 @@ Use of edgeR package to normalize count data
 }
 \examples{
 se <- readRDS(system.file("extdata",
-        "mouseSE_dev_tooth_count_length_geneData.rds",
+        "rat_vole_mouseSE_salmon.rds",
         package = "broadSeq"))
 
 se <- broadSeq::normalizeEdgerCPM(se , method = "TMM", cpm.log = FALSE )

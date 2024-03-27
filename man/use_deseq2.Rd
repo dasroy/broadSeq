@@ -29,11 +29,11 @@ A wrapper function of DESeq2 where input is an object of \code{\link{SummarizedE
 \examples{
 
 se <- readRDS(system.file("extdata",
-        "mouseSE_dev_tooth_count_length_geneData.rds",
+        "rat_vole_mouseSE_salmon.rds",
         package = "broadSeq"))
 
 # To reduce runtime
-se = se[rowData(se)$chromosome_name == 5,]
+se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 
 result <-
     use_deseq2(se = se,

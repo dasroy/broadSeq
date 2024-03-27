@@ -39,11 +39,11 @@ To identify differentially expressed genes by multiple methods
 \examples{
 
 se <- readRDS(system.file("extdata",
-        "mouseSE_dev_tooth_count_length_geneData.rds",
+        "rat_vole_mouseSE_salmon.rds",
         package = "broadSeq"))
 
 # To reduce runtime
-se = se[rowData(se)$chromosome_name == 5,]
+se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 
 # First define a named list of functions
 funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
@@ -54,7 +54,7 @@ funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
 
 
 multi_result <- broadSeq::use_multDE(
-    se = se[rowData(se)$chromosome_name == 5,],
+    se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"],
     deFun_list = funs, return.df = TRUE,
     colData_id = "stage", control = "Bud", treatment = "Cap",
     rank = TRUE)

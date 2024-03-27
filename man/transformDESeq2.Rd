@@ -26,7 +26,7 @@ assay should be the first in assays list and the mode is integer.
 }
 \examples{
  se <- readRDS(system.file("extdata",
-        "mouseSE_dev_tooth_count_length_geneData.rds",
+        "rat_vole_mouseSE_salmon.rds",
         package = "broadSeq"))
 
 se <- broadSeq::transformDESeq2(se,method = "vst"  )

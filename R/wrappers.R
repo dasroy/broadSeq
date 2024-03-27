@@ -48,11 +48,11 @@ use_limma_voom <- function(se, colData_id, control, treatment,rank=FALSE,...){
 #' @examples
 #'
 #' se <- readRDS(system.file("extdata",
-#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         "rat_vole_mouseSE_salmon.rds",
 #'         package = "broadSeq"))
 #'
 #' # To reduce runtime
-#' se = se[rowData(se)$chromosome_name == 5,]
+#' se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 #' result <-
 #'     use_limma(se = se,
 #'            colData_id = "stage", control = "Bud", treatment = "Cap",
@@ -149,11 +149,11 @@ use_edgeR_exact <- function(se, colData_id, control, treatment, rank=FALSE,...){
 #' @examples
 #'
 #' se <- readRDS(system.file("extdata",
-#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         "rat_vole_mouseSE_salmon.rds",
 #'         package = "broadSeq"))
 #'
 #' # To reduce runtime
-#' se = se[rowData(se)$chromosome_name == 5,]
+#' se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 #'
 #' result <-
 #'     use_edgeR(se = se,
@@ -223,11 +223,11 @@ use_edgeR <- function(se, colData_id, control, treatment, rank=FALSE,
 #' @examples
 #'
 #' se <- readRDS(system.file("extdata",
-#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         "rat_vole_mouseSE_salmon.rds",
 #'         package = "broadSeq"))
 #'
 #' # To reduce runtime
-#' se = se[rowData(se)$chromosome_name == 5,]
+#' se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 #'
 #' result <-
 #'     use_deseq2(se = se,
@@ -284,11 +284,11 @@ use_deseq2 <- function(se, colData_id, control, treatment,rank=FALSE,...){
 #' @examples
 #'
 #' se <- readRDS(system.file("extdata",
-#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         "rat_vole_mouseSE_salmon.rds",
 #'         package = "broadSeq"))
 #'
 #' # To reduce runtime
-#' se = se[rowData(se)$chromosome_name == 5,]
+#' se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 #'
 #' result <-
 #'     use_DELocal(se = se,
@@ -338,11 +338,11 @@ use_DELocal <- function(se, colData_id, control, treatment,rank=FALSE,...){
 #' @examples
 #'
 #' se <- readRDS(system.file("extdata",
-#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         "rat_vole_mouseSE_salmon.rds",
 #'         package = "broadSeq"))
 #'
 #' # To reduce runtime
-#' se = se[rowData(se)$chromosome_name == 5,]
+#' se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 #'
 #' result <-
 #'     use_EBSeq(se = se,
@@ -401,11 +401,11 @@ use_EBSeq <- function(se, colData_id, control, treatment, rank=FALSE,...){
 #' @examples
 #'
 #' se <- readRDS(system.file("extdata",
-#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         "rat_vole_mouseSE_salmon.rds",
 #'         package = "broadSeq"))
 #'
 #' # To reduce runtime
-#' se = se[rowData(se)$chromosome_name == 5,]
+#' se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 #'
 #' result_Noiseq <-
 #'     use_NOIseq(se = se,
@@ -516,11 +516,11 @@ use_SAMseq <- function(se, colData_id, control, treatment,rank = FALSE,...){
 #' @examples
 #'
 #' se <- readRDS(system.file("extdata",
-#'         "mouseSE_dev_tooth_count_length_geneData.rds",
+#'         "rat_vole_mouseSE_salmon.rds",
 #'         package = "broadSeq"))
 #'
 #' # To reduce runtime
-#' se = se[rowData(se)$chromosome_name == 5,]
+#' se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 #'
 #' # First define a named list of functions
 #' funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
@@ -531,7 +531,7 @@ use_SAMseq <- function(se, colData_id, control, treatment,rank = FALSE,...){
 #'
 #'
 #' multi_result <- broadSeq::use_multDE(
-#'     se = se[rowData(se)$chromosome_name == 5,],
+#'     se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"],
 #'     deFun_list = funs, return.df = TRUE,
 #'     colData_id = "stage", control = "Bud", treatment = "Cap",
 #'     rank = TRUE)

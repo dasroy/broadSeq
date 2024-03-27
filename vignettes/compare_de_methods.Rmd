@@ -29,10 +29,10 @@ In this vignette, the easy use of broadSeq to identify differentially expressed(
 In this example we will use RNA-seq expression data from developing mouse molar tissue. First we read the data as a `SummarizedExperiment` object. 
 
 ```{r warning=FALSE,eval=TRUE}
-se <- readRDS(system.file("extdata",
-                               "mouseSE_dev_tooth_count_length_geneData.rds",
-                               # "mouseSE_dev_tooth_count_length.rds", 
-                               package = "broadSeq"))
+se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+
+# To reduce the runtime, subset of the data used here
+se <- se[rowData(se)$chromosome_name == 2,colData(se)$species == "Mouse"]
 ```
 
 
@@ -120,9 +120,7 @@ head(result_Noiseq)
 ```
 
 
-<details>
-  <summary>Additional plots</summary>
-  
+
 ```{r warning=FALSE,fig.width=8,fig.height=6,message=FALSE}
 # boxplot of top four DE genes with their mgi_symbol
 
@@ -131,7 +129,7 @@ head(result_Noiseq)
 
 pg <- broadSeq::genes_plot(se, x = "stage", assayName =  "counts",  
            features = result_Noiseq %>% dplyr::filter(rank <5) %>% rownames(),
-           fill="stage", facet.by = "mgi_symbol",
+           fill="stage", facet.by = "symbol",
            palette="jco", add = "dotplot")+rotate_x_text()
 
 pg_sc <- ggscatter(result_Noiseq, x="Bud_mean", y="Cap_mean",color = "prob")+ 
@@ -139,8 +137,6 @@ pg_sc <- ggscatter(result_Noiseq, x="Bud_mean", y="Cap_mean",color = "prob")+
 
 pg+pg_sc
 ```
-
-</details> 
 
 <!-- Note that the results="hide" and fig.keep = "none" parameters were added to the code chunk to prevent printing of the R code results and the exploratory plots created in the code chunk. -->
 
@@ -189,7 +185,7 @@ funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
 
 
 multi_result <- broadSeq::use_multDE(
-    se = se[rowData(se)$chromosome_name == 5,], 
+    se = se, 
     deFun_list = funs, return.df = TRUE,  
     colData_id = "stage", control = "Bud", treatment = "Cap", 
     rank = TRUE)
@@ -228,16 +224,16 @@ Up regulated genes should be red or hot colors
 multi_result %>% broadSeq::volcanoPlot(
     pValName = "deseq2_padj",
     lFCName = "deseq2_log2FoldChange",
-    labelName = "mgi_symbol",
+    labelName = "symbol",
     palette = c("purple","orange","grey"),
     selectedLabel =
-        multi_result %>% dplyr::arrange(deseq2_padj) %>% pull(mgi_symbol) %>% head()
+        multi_result %>% dplyr::arrange(deseq2_padj) %>% pull(symbol) %>% head()
 )
 
 multi_result %>% broadSeq::volcanoPlot(
     pValName = "deseq2_padj",
     lFCName = "deseq2_log2FoldChange",
-    labelName = "mgi_symbol",
+    labelName = "symbol",
     palette = "lancet" ,
     selectedLabel = list(criteria = "(`x` > 2 | `x` < -2) & (`y` > 10)")
 ) 
