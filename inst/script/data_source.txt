@@ -1,0 +1,40 @@
+The raw RNA-seq data are downloaded from https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE142201 .
+The raw files are processed with nf-core/rnaseq and merged into a single summerized experiment
+Then to reduce the file size only highly variable genes and very low expressing
+genes are kept which is enough for the vignettes.
+
+```r
+# To reduce the file size
+
+library(broadSeq)
+# se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+se <- readRDS("inst/extdata/rat_vole_mouseSE_salmon.rds")
+
+test_se <- broadSeq::transformDESeq2(se,method = "vst"  )
+varGene <- broadSeq:::getSelectedGene(genes = NULL,se = test_se,ntop = 5000, scaledAssay = "vst")
+varGene <- rownames(se)[varGene]
+
+keep <- (assays(se)[["counts"]] >= 3) %>% rowSums() >= 5
+lowGenes <- rownames(se)[!keep]
+
+knownGenes <- as.data.frame(rowData(se)) %>%
+    dplyr::filter(!(Class %in% c("Other","Dev. process"))) %>%
+    pull(symbol)
+
+test_se <- se[unique(c(knownGenes, lowGenes, varGene))]
+test_se <- broadSeq::transformDESeq2(test_se, method = "vst"  )
+computedPCA_vst <- broadSeq::prcompTidy(test_se, scaledAssay = "vst", ntop = 500)
+
+plotAnyPC(computedPCA = computedPCA_vst,  x = 1, y = 2,
+          color = "species", shape = "stage", legend = "bottom")
+
+plotAnyPC(computedPCA = computedPCA_vst,  x = 3, y = 2,
+          color = "species", shape = "stage", legend = "bottom")
+
+
+for (an in assayNames(test_se)) {
+    mode(assays(test_se)[[an]] ) <- "integer"
+}
+
+saveRDS(test_se,"inst/extdata/rat_vole_mouseSE_salmon.rds")
+```
