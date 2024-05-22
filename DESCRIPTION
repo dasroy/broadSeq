@@ -1,6 +1,6 @@
 Package: broadSeq
 Title: broadSeq : for streamlined exploration of RNA-seq data
-Version: 0.99.1
+Version: 0.99.2
 Authors@R: 
     person("Rishi", "Das Roy", , "rishi.dasroy@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3276-7279"))

@@ -92,6 +92,12 @@ pl+labs(x="")+ ggsankey::theme_sankey(base_size = 20)
 
 ## Installation
 
+```{r eval=FALSE}
+if (!require("BiocManager"))
+    install.packages("BiocManager")
+BiocManager::install("broadSeq")
+```
+
 You can install the development version of broadSeq from
 [GitHub](https://github.com/) with:
 

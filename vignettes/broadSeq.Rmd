@@ -1,8 +1,10 @@
 ---
-title: "Introduction to broadSeq"
-output: rmarkdown::html_vignette
+title: "Using broadSeq to analyze RNA-seq data"
+output: 
+    BiocStyle::html_document:
+        toc_float: true
 vignette: >
-  %\VignetteIndexEntry{Introduction to broadSeq}
+  %\VignetteIndexEntry{Using broadSeq to analyze RNA-seq data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,29 +20,31 @@ knitr::opts_chunk$set(
 library(broadSeq)
 ```
 
+# Introduction  
+
 To analyze RNA-seq **count** data, there are several ways/methods for each steps like
 
-1.  transforming/scaling of the count data,
+1.  Transforming/scaling of the count data,
 
-2.  QC by clustering and
+2.  QC by clustering the samples using PCA, hierarchical clustering or multidimensional scaling
 
-3.  most importantly Differential expression of genes.
+3.  Most importantly identification of differentially expressed.
 
-    Additionally for each of these steps, there are different packages or tools whose input and output structure is very different. Therefore it is very difficult to include useful features from different packages in a study.
+For each of these steps, there are different packages or tools whose input and output formats are very different. Therefore it is very difficult to use all these features from different packages in a study.
 
-```{r fig.cap = "Input and output data structures of different methods to idetify differentially expressed genes.",out.width = '70%', echo = FALSE}
+```{r fig.cap = "Input and output data structures of different methods to idetify differentially expressed genes.", echo = FALSE}
 knitr::include_graphics("img/io_p.png")
 ```
 
-#### The *broadSeq* package simplifies the process of including many RNAseq packages and evaluating their performance.
+The *broadSeq* package simplifies the process of including many **Bioconductor** packages for RNA-seq data and evaluating their performance.
 
-```{r out.width = '70%', echo = FALSE,fig.cap="Flowchart"}
+```{r echo = FALSE,fig.cap="Flowchart"}
 knitr::include_graphics("img/broadSeq.png")
 ```
 
 The silent features of *broadSeq* are
 
--   **Single input format** : as well known [SummarizedExperiment](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html)
+-   **Single input format** : `r Biocpkg("SummarizedExperiment")` 
 -   **Single output format** : as base `data.frame`
 -   Visualization : Using `ggplot2` and `ggpubr` packages for publication ready figures
 -   Easy and advanced PCA analysis
@@ -48,3 +52,562 @@ The silent features of *broadSeq* are
 -   Differential expression
     -   Comparison of different methods
 
+# Reading the data
+
+```{r eval = FALSE}
+library(broadSeq)
+library(ggplot2)
+```
+
+Here we read gene expression data which is quantified by `salmon` and
+processed by `r Biocpkg("tximport")` package. The `salmon` generates count data, "abundance"
+(TPM) and gene length values. Therefore we may rename the corresponding
+assay slot 'abundance' to 'TPM'.
+
+These data belongs to this studies reference!!
+
+In this data, there are gene expression values from first molar tissue
+of three different developing rodent species. The tissues are also from
+four different developmental time points.
+
+```{r message=FALSE}
+se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+SummarizedExperiment::assayNames(se)
+```
+
+## Sample metadata
+
+```{r }
+as.data.frame(colData(se)) %>% dplyr::count(stage,species) %>% tidyr::spread(stage,n)
+
+se$stage <- factor(se$stage,levels = c("Bud","Cap","Late Cap","Bell"))
+```
+
+## Filtering out low expression genes
+
+```{r lowExpr,warning=FALSE,fig.width= 6}
+assays(se)[["counts"]][,5] %>% ggpubr::ggdensity(y = "count")+
+    ggplot2::geom_vline(xintercept = 10)+ggplot2::scale_x_log10()
+
+keep <- (assays(se)[["counts"]] >= 3) %>% rowSums() >= 5 
+# smallest Group Size is 5
+table(keep)
+```
+
+# Normalization
+
+`r Biocpkg("edgeR")` provides two different methods ; CPM and TMM. But it does not use
+normalized values for Differential Expression.
+
+It also does not normalizes count values rather it normalizes the
+library sizes using "TMM" method in 'normLibSizes'. Either use or not
+use normLibSizes(). edgeR::cpm() will generate normalized expression
+values.
+
+## CPM
+
+```{r warning=FALSE,message=FALSE}
+se <- broadSeq::normalizeEdgerCPM(se ,method = "none",cpm.log = TRUE )
+## The normalized values are added with the assay name "logCPM"
+SummarizedExperiment::assayNames(se)
+```
+
+## TMM
+
+```{r warning=FALSE,message=FALSE}
+se <- broadSeq::normalizeEdgerCPM(se , method = "TMM", cpm.log = FALSE )
+## The normalized values are added with the assay name "TMM"
+SummarizedExperiment::assayNames(se)
+```
+
+## access
+
+```{r }
+assays(se)[["counts"]][1:5,1:5]
+assays(se)[["TMM"]][1:5,1:5]
+assays(se)[["logCPM"]][1:5,1:5]
+```
+
+# Transformation
+
+`r Biocpkg("DESeq2")` provides three different transformations
+
+## VST
+
+variance stabilizing transformation (VST)
+
+```{r warning=FALSE}
+se <- broadSeq::transformDESeq2(se,method = "vst"  )
+```
+
+## Normalized counts transformation
+
+```{r }
+se <- broadSeq::transformDESeq2(se, method = "normTransform"  )
+```
+
+## rlog
+
+regularized log
+
+```{r eval=FALSE}
+se <- broadSeq::transformDESeq2(se, method = "rlog")
+```
+
+```{r }
+SummarizedExperiment::assayNames(se)
+```
+
+## Comparision
+
+Boxplot of different transforms for each sample.
+
+```{r warning=FALSE,fig.height=6,fig.width=8}
+p <- broadSeq::sampleAssay_plot(se[, se$species=="Mouse" ], 
+                           assayName = "counts", fill = "stage", 
+                           yscale = "log2")+ rremove("x.text")
+
+p1 <- broadSeq::sampleAssay_plot(se[, se$species=="Mouse"], 
+                           assayName = "vst", fill = "stage")+ rremove("x.text")
+
+p2 <- broadSeq::sampleAssay_plot(se[, se$species=="Mouse"], 
+                           assayName = "TMM", fill = "stage", 
+                           yscale = "log10")+ rremove("x.text")
+
+p3 <- broadSeq::sampleAssay_plot(se[, se$species=="Mouse"], 
+                           assayName = "logCPM", fill = "stage")+ rremove("x.text")
+
+
+ggarrange(p,p1,p2,p3, common.legend = TRUE, labels = c("A","B","C"))
+```
+
+Plot standard deviations versus means expression
+
+```{r eval=FALSE}
+if (requireNamespace("vsn", quietly = TRUE)) {
+    library("vsn")
+    x <- meanSdPlot(
+        log2(assays(se[, se$species == "Rat"])[["counts"]]+1),
+        plot = FALSE)
+    print(x$gg +ggtitle(label = "log2(n+1) "))
+    
+    x <- meanSdPlot(
+        assays(se[, se$species == "Rat"])[["vst"]],
+        plot = FALSE)
+    
+    print(x$gg +ggtitle(label = "Vst"))
+    
+    x <- meanSdPlot(
+        assays(se[, se$species == "Rat"])[["logCPM"]],
+        plot = FALSE)
+    print(x$gg + ggtitle(label = "logCPM"))
+}    
+
+```
+
+# Visualization of gene Expression
+
+```{r message=FALSE,warning=FALSE}
+## Multiple assay of a single gene
+broadSeq::assay_plot(se, feature = c("Shh"), 
+           assayNames = c("counts","logCPM","vst","TMM"),
+           x = "stage", fill="species", add="dotplot", palette = "npg")
+
+## Expression of multiple genes from a single assay
+broadSeq::genes_plot(se, 
+                     features = c("Shh","Edar"), 
+                     facet.by = "symbol",
+                     x = "stage", assayName = "vst", fill="species", palette = "jco")
+```
+
+## Pre-defined or custom color palette based on journals
+
+Scientific journal palettes from `ggsci` R package, e.g.: "npg", "aaas",
+"lancet", "jco", "ucscgb", "uchicago", "simpsons" and "rickandmorty" can
+be passed for coloring or filling by groups from metadata.
+
+```{r warning=FALSE,message=FALSE,fig.height=6,fig.width=8}
+jco <- broadSeq::genes_plot(se[,se$species == "Mouse"], 
+                     features = c("Shh"), facet.by = "symbol", assayName =  "logCPM",
+                     x = "stage",  fill="stage", add="dotplot", xlab = "", 
+                     title = "Journal of Clinical Oncology", palette = "jco") 
+
+npg <- broadSeq::genes_plot(se[,se$species == "Mouse"], 
+                     features = c("Shh"), facet.by = "symbol",assayName =  "logCPM",
+                     x = "stage", fill="stage", add="dotplot", xlab = "",
+                     title = "Nature Publishing Group", palette = "npg") 
+
+aaas <- broadSeq::genes_plot(se[,se$species == "Mouse"], 
+                     features = c("Shh"), facet.by = "symbol", assayName = "logCPM",
+                     x = "stage", fill="stage", add="dotplot", xlab = "",
+                     title = "Science", palette = "aaas")
+
+nejm <- broadSeq::genes_plot(se[,se$species == "Mouse"], 
+                     features = c("Shh"), facet.by = "symbol", assayName = "logCPM",
+                     x = "stage", fill="stage", add="dotplot",  xlab = "",
+                     title = "New England Journal of Medicine",palette = "nejm")
+
+# ggarrange(jco,npg,aaas,nejm, 
+#           common.legend = TRUE,legend = "none",
+#           labels = c("A","B","C","D"))
+
+ggarrange(jco+ggpubr::rotate_x_text(), npg+ggpubr::rotate_x_text(),
+          aaas+ggpubr::rotate_x_text(),nejm+ggpubr::rotate_x_text(),
+          nrow = 1, common.legend = TRUE,legend = "none",
+          labels = c("A","B","C","D")) %>% 
+    annotate_figure( top = text_grob("Color palette")) 
+```
+
+# QC with Clustering
+
+## MDS plot
+
+Classical multidimensional scaling is based on measuring the distance
+between the samples.
+
+Popular function plotMDS from `r Biocpkg("limma")` does not work with
+`r Biocpkg("SummarizedExperiment")` object. Here broadSeq provides this function
+through package `cmdscale {stats}`.
+
+```{r fig.height=6,fig.width=8}
+broadSeq::plot_MDS(se, scaledAssay = "vst", ntop=500, 
+                   color = "species", shape = "stage", 
+                   ellipse=TRUE, legend = "bottom")
+```
+
+MDS is cool but it is not possible to know/visualize top variable genes
+with their meta data which is stored in `se` object
+
+```{r }
+head(rowData(se))
+```
+
+Other methods can help to visualize gene information along with
+clustering information.
+
+## Hierarchical clustering and Heatmap
+
+```{r fig.height=6,fig.width=8}
+p_vst <- broadSeq::plotHeatmapCluster(
+    se,
+    scaledAssay = "vst",
+    annotation_col = c("species", "stage"),
+    annotation_row = c("Class","gene_biotype"),
+    ntop = 30, show_geneAs = "symbol",
+    cluster_cols = TRUE, cluster_rows = FALSE,
+    show_rownames = TRUE, show_colnames = FALSE,
+    main = "Top 30 variable gene vst"
+)
+```
+
+## PCA plot
+
+### prcompTidy
+
+Perform Principal Components Analysis with function
+`broadSeq::prcompTidy()` which returns a list of four `data.frame`
+objects:
+
+-   pc_scores,
+
+-   eigen_values,
+
+-   loadings (eigen vectors) and
+
+-   the original data.
+
+    Compute PCA using any assay
+
+```{r warning=FALSE}
+computedPCA_logCPM <- broadSeq::prcompTidy(se, scaledAssay = "logCPM", ntop = 500)
+## PCA based on vst values
+computedPCA_vst <- broadSeq::prcompTidy(se, scaledAssay = "vst", ntop = 500)
+```
+
+### Plot
+
+#### logCPM
+
+```{r fig.width=8,fig.height=6}
+plotAnyPC(computedPCA = computedPCA_logCPM,
+          x = 1, y = 2, color = "species", shape = "stage",
+          legend = "bottom")
+```
+
+#### VST
+
+Here PC 2 and 3 are used which can cluster the samples by both species and developmental
+factors. 
+```{r fig.width=8,fig.height=6}
+pca_vst <- plotAnyPC(computedPCA = computedPCA_vst,
+            x = 2, y = 3,  color = "species", shape = "stage", 
+            legend = "bottom") 
+```
+
+#### Other PCs
+
+```{r fig.width=8,fig.height=6}
+computedPCA_vst$eigen_values %>%
+        dplyr::filter(var_exp >= 2) %>%
+    ggbarplot(x="PC",y="var_exp", label = TRUE, label.pos = "out")
+```
+
+It can be checked if there are other PCs to explain considerable
+variance. PC3 can be useful to see variance due to different
+developmental time points.
+
+```{r fig.width=8,fig.height=6}
+pca_vst_2_3 <-plotAnyPC(computedPCA = computedPCA_vst,
+                x = 2, y = 3,  
+                color = "species", shape = "stage", legend = "bottom")
+# pca_vst_2_3
+```
+
+PC3 captures beautifully the variance in gene expression due to
+developmental stages.
+<!-- The PCAs are different since the top 500 genes are different for rlog and vst.   -->
+
+#### Gene loading
+
+```{r fig.width=7,fig.height=6}
+computedPCA_vst %>% broadSeq::getFeatureLoadRanking(keep = c("symbol","Class")) %>% head()
+
+#  Top 5 genes of PC2
+
+computedPCA_vst$loadings %>% top_n(5,abs(PC2)  ) %>% dplyr::select(gene,PC2)
+
+pca_vst_loading <- computedPCA_vst %>% 
+    broadSeq::getFeatureLoadRanking(keep = c("symbol","Class"), topN = 50, pcs=1:10) %>% 
+    dplyr::count(Class, PC) %>%
+    ggbarplot(
+        x = "PC", y = "n", fill = "Class",
+        legend = "bottom", palette = c("red","blue","orange","purple","white","grey")
+    ) 
+# pca_vst_loading
+```
+
+#### Biplot
+
+```{r fig.width=8,fig.height=6}
+# By default it plots top 2 genes from each PC axis
+pca_vst_bi <- broadSeq::biplotAnyPC(computedPCA = computedPCA_vst, 
+            x = 1, y = 2, genesLabel = "symbol", 
+            color = "species", shape = "stage", 
+            legend = "bottom")
+# pca_vst_bi
+```
+
+
+```{r fig.width=8,fig.height=8}
+ggarrange(
+    ggarrange(pca_vst_bi+ggtitle(label =  ""),
+          pca_vst_2_3+ggtitle(label =  ""), common.legend = TRUE),
+    pca_vst_loading, nrow = 2)
+
+```
+
+#### User defined genes
+
+Now plotting top 5 genes from PC3
+
+```{r fig.width=8,fig.height=6}
+# Top 5 genes of PC3
+biplotAnyPC(computedPCA = computedPCA_vst,x = 2, y = 3, 
+            color = "species", shape = "stage",
+            genes= computedPCA_vst$loadings %>% 
+                top_n(5,abs(PC3)) %>% pull(gene),
+            genesLabel = "symbol")
+
+## Plot progression gene "Shh" 
+biplotAnyPC(computedPCA = computedPCA_vst,x = 2, y = 3, 
+            color = "species", shape = "stage",
+            genes=c("Shh"),
+            genesLabel = "symbol")
+```
+
+
+# Compare Differential expression 
+
+## Data 
+
+In this example we will use RNA-seq expression data from developing mouse molar tissue. First we read the data as a `SummarizedExperiment` object. 
+
+```{r warning=FALSE,eval=TRUE}
+se <- readRDS(system.file("extdata","rat_vole_mouseSE_salmon.rds", package = "broadSeq"))
+
+# To reduce the run time, subset of the data used here
+se <- se[,colData(se)$species == "Mouse"]
+```
+
+
+```{r warning=FALSE,eval=FALSE,echo=FALSE}
+count_matrix <- as.matrix(read.table(file = system.file("extdata", 
+                                              "tooth_RNASeq_counts.txt", 
+                                              package = "DELocal")))
+colData <- data.frame(condition=gsub("\\..*",x=colnames(count_matrix),replacement = ""))
+
+gene_location <- read.table(file = system.file("extdata", 
+                                              "gene_location.txt", 
+                                              package = "DELocal"))
+
+se <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=count_matrix),
+                                                      rowData = gene_location, 
+                                                      colData=colData)
+# contrast= c("condition","ME13","ME14")
+```
+
+### Gene information
+
+```{r warning=FALSE}
+head(rownames(se))
+head(rowData(se))
+```
+
+### Sample information  
+
+The sample metadata  
+
+```{r warning=FALSE,eval=TRUE}
+head(colData(se))
+table(colData(se)$stage)
+```
+<!-- There are two biological conditions ME13 and ME14 (embryonic days 13 and 14) with seven replicates each. The relevant question is which genes are differentially expressed between these two developmental time points. -->
+
+## Differential Expression  
+
+There are four developmental time points; Bud, Cap, Late Cap and Bell (from embryonic days 13 to 16) with seven replicates each. Here, in this example, DE genes between Bud and Cap stages will be identified.
+
+### Function pattern  
+
+In broadSeq, the names of DE method has similar pattern like "use_"+"method name". All these method has same signature of input arguments. 
+
+Here we will see `use_NOIseq()` method to apply `NOISeq::noiseqbio()` function.   
+
+```{r warning=FALSE,fig.width=6,fig.height=6,message=FALSE}
+result_Noiseq <- 
+    use_NOIseq(se = se, 
+           colData_id = "stage", control = "Bud", treatment = "Cap",
+           rank = TRUE, 
+           r = 10) # r is an argument of NOISeq::noiseqbio
+
+head(result_Noiseq)
+```
+
+
+
+```{r warning=FALSE,fig.width=8,fig.height=6,message=FALSE}
+pg <- broadSeq::genes_plot(se, x = "stage", assayName =  "counts",  
+           features = result_Noiseq %>% dplyr::filter(rank <5) %>% rownames(),
+           fill="stage", facet.by = "symbol",
+           palette="jco", add = "dotplot")+rotate_x_text()
+
+pg_sc <- ggscatter(result_Noiseq, x="Bud_mean", y="Cap_mean",color = "prob")+ 
+    scale_x_log10()+scale_y_log10()
+
+pg+pg_sc
+```
+
+<!-- Note that the results="hide" and fig.keep = "none" parameters were added to the code chunk to prevent printing of the R code results and the exploratory plots created in the code chunk. -->
+
+### Available methods
+
+Following implementations of popular methods are available here.
+```{r warning=FALSE,results="hide", fig.keep = "none"}
+# limma 
+?use_limma_trend(se, colData_id, control, treatment, rank = FALSE, ...)
+?use_limma_voom(se, colData_id, control, treatment, rank = FALSE, ...)
+
+# edgeR 
+?use_edgeR_exact(se, colData_id, control, treatment, rank = FALSE, ...)
+?use_edgeR_GLM(se, colData_id, control, treatment, rank = FALSE, ...)
+
+# deseq2
+?use_deseq2(se, colData_id, control, treatment, rank = FALSE, ...)
+
+# DELocal
+?use_DELocal(se, colData_id, control, treatment, rank = FALSE, ...)
+
+# noiseq
+?use_NOIseq(se, colData_id, control, treatment, rank = FALSE, ...) 
+
+# EBSeq 
+?use_EBSeq(se, colData_id, control, treatment, rank = FALSE, ...)
+
+# samseq
+?use_SAMseq(se, colData_id, control, treatment, rank = FALSE, ...)
+```
+
+Advanced users can pass package specific arguments through '...' .
+
+## Compare DE results
+
+It is possible to execute all DE methods together and get aggregated results in a data.frame.
+`broadSeq::use_multDE()` should be used for it.
+
+```{r warning=FALSE,results="hide", fig.keep = "none"}
+# First define a named list of functions
+funs <- list(limma_trend = use_limma_trend, limma_voom = use_limma_voom,
+             edgeR_exact = use_edgeR_exact, edgeR_glm = use_edgeR_GLM,
+             deseq2 = use_deseq2, 
+             DELocal = use_DELocal, noiseq = use_NOIseq, 
+             EBSeq = use_EBSeq) 
+
+
+multi_result <- broadSeq::use_multDE(
+    se = se, 
+    deFun_list = funs, return.df = TRUE,  
+    colData_id = "stage", control = "Bud", treatment = "Cap", 
+    rank = TRUE)
+```
+
+The column names of the resultant data.frame are prefixed with corresponding function names. 
+
+```{r warning=FALSE}
+head(multi_result)
+# nrow(multi_result) == nrow(se)
+colnames(multi_result)
+```
+
+#### Similarity of methods
+
+DE methods are clustered based on their ranking of genes
+
+```{r warning=FALSE,fig.width=6,fig.height=6,eval=TRUE}
+clusters <- multi_result %>% dplyr::select(ends_with("rank")) %>% t() %>% dist() %>% hclust()
+plot(clusters,main =  "distance: Euclidean")
+```
+
+### Plots
+
+#### Volcano 
+
+Up regulated genes should be red or hot colors  
+
+```{r warning=FALSE,fig.width=6,fig.height=6,eval=TRUE}
+multi_result %>% broadSeq::volcanoPlot(
+    pValName = "deseq2_padj",
+    lFCName = "deseq2_log2FoldChange",
+    labelName = "symbol",
+    palette = "lancet" ,
+    selectedLabel =
+        multi_result %>% dplyr::arrange(deseq2_padj) %>% pull(symbol) %>% head()
+)
+
+multi_result %>% broadSeq::volcanoPlot(
+    pValName = "deseq2_padj",
+    lFCName = "deseq2_log2FoldChange",
+    labelName = "symbol",
+    palette = c("purple","orange","grey"),
+    selectedLabel = list(criteria = "(`x` > 5 | `x` < -2) & (`y` > 10)")
+) +xlim(-7.5,7.5)
+```
+
+
+<details>
+<summary>Session Info</summary>
+
+```{r echo=FALSE,message=FALSE,warning=FALSE,error=FALSE}
+sessionInfo()
+```
+
+</details>
