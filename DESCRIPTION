@@ -1,6 +1,6 @@
 Package: broadSeq
 Title: broadSeq : for streamlined exploration of RNA-seq data
-Version: 0.99.2
+Version: 0.99.3
 Authors@R: 
     person("Rishi", "Das Roy", , "rishi.dasroy@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3276-7279"))
@@ -10,11 +10,13 @@ Description: This package helps user to do easily RNA-seq data analysis with mul
     from different methods. It will help user to quickly evaluate different methods. 
 License: MIT + file LICENSE
 URL: https://github.com/dasroy/broadSeq
+BugReports: https://github.com/dasroy/broadSeq/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 biocViews: GeneExpression, DifferentialExpression, RNASeq, 
-        Transcriptomics
+        Transcriptomics, Sequencing, Coverage, 
+        GeneSetEnrichment, GO
 Suggests: 
     knitr,
     limma (>= 3.54.0),
@@ -26,6 +28,7 @@ Depends:
     ggpubr,
     SummarizedExperiment 
 Imports: 
+    BiocStyle,
     DELocal,
     EBSeq (>= 1.38.0),
     DESeq2 (>= 1.38.2),

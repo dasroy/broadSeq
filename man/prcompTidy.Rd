@@ -13,7 +13,7 @@ plotAnyPC(computedPCA, x = 1, y = 2, ...)
 
 biplotAnyPC(computedPCA, x = 1, y = 2, genes = NULL, genesLabel = NULL, ...)
 
-getFeatureLoadRanking(computedPCA, pcs = 1:5, topN = 10, keep)
+getFeatureLoadRanking(computedPCA, pcs = seq_len(5), topN = 10, keep)
 }
 \arguments{
 \item{se}{Object of \code{\link{SummarizedExperiment}} class}

@@ -237,7 +237,7 @@ getSelectedGene <- function(genes, se, ntop, scaledAssay) {
         selected_genes <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
     } else {
         message("Using all ", nrow(se), " genes.")
-        selected_genes <- 1:nrow(se)
+        selected_genes <- seq_len(nrow(se))
     }
     return(selected_genes)
 }
@@ -258,8 +258,8 @@ getSelectedGene <- function(genes, se, ntop, scaledAssay) {
 #' @importFrom ggplot2 scale_shape_manual
 #' @rdname prcompTidy
 plotAnyPC <- function(computedPCA,x =1 ,y = 2, ...){
-    pc_x = paste("PC",x,sep = "")
-    pc_y = paste("PC",y,sep = "")
+    pc_x <- paste("PC",x,sep = "")
+    pc_y <- paste("PC",y,sep = "")
     pct <- computedPCA$eigen_values %>%
         dplyr::filter(PC %in% c(pc_x,pc_y)) %>%
         dplyr::pull(var_pct) %>%
@@ -269,7 +269,7 @@ plotAnyPC <- function(computedPCA,x =1 ,y = 2, ...){
     p <- computedPCA$pc_scores %>% ggscatter(x = pc_x, y = pc_y,...)
     if(!is.null(dottedArg$shape) ) {
         computedPCA$pc_scores[,dottedArg$shape] <- factor(computedPCA$pc_scores[,dottedArg$shape])
-        p <- p + scale_shape_manual(values=1:nlevels(computedPCA$pc_scores[,dottedArg$shape]))
+        p <- p + scale_shape_manual(values=seq_len(computedPCA$pc_scores[,dottedArg$shape]))
     }
     return(
         p %>%
@@ -296,8 +296,8 @@ plotAnyPC <- function(computedPCA,x =1 ,y = 2, ...){
 #' @rdname prcompTidy
 biplotAnyPC <- function(computedPCA,x = 1,y = 2,
                         genes=NULL, genesLabel = NULL,...){
-    pc_x = paste("PC",x,sep = "")
-    pc_y = paste("PC",y,sep = "")
+    pc_x <- paste("PC",x,sep = "")
+    pc_y <- paste("PC",y,sep = "")
     pct <- computedPCA$eigen_values %>%
         dplyr::filter(PC %in% c(pc_x,pc_y)) %>%
         dplyr::pull(var_pct) %>%
@@ -307,7 +307,7 @@ biplotAnyPC <- function(computedPCA,x = 1,y = 2,
     p <- computedPCA$pc_scores %>% ggscatter(x = pc_x, y = pc_y,...)
     if(!is.null(dottedArg$shape) ) {
         computedPCA$pc_scores[,dottedArg$shape] <- factor(computedPCA$pc_scores[,dottedArg$shape])
-        p <- p + scale_shape_manual(values=1:nlevels(computedPCA$pc_scores[,dottedArg$shape]))
+        p <- p + scale_shape_manual(values=seq_len(computedPCA$pc_scores[,dottedArg$shape]))
     }
 
     if(is.null(genes)){
@@ -344,20 +344,20 @@ biplotAnyPC <- function(computedPCA,x = 1,y = 2,
 #'
 #' @examples
 #' @rdname prcompTidy
-getFeatureLoadRanking <- function(computedPCA, pcs=1:5, topN = 10, keep ){
+getFeatureLoadRanking <- function(computedPCA, pcs=seq_len(5), topN = 10, keep ){
     x <- plyr::ldply(paste("PC",pcs,sep = ""), .fun = extract_topGeneLoadings,
                 loadings = computedPCA$loadings,
                 topN = topN, keep = keep)
-    x$PC <- x$PC %>% factor(levels =  paste("PC",1:10,sep = ""))
+    x$PC <- x$PC %>% factor(levels =  paste("PC",seq_len(10),sep = ""))
     return(x)
 }
 
 extract_topGeneLoadings <- function(loadings,whichpc,topN,keep){
     geneloadings_sorted <- dplyr::arrange(loadings, desc(abs( !!sym(whichpc)))) %>%
         dplyr::select(all_of(keep), dplyr::all_of(whichpc))
-    geneloadings_extreme <- geneloadings_sorted %>% dplyr::slice(1:topN)#, with_ties = FALSE)
+    geneloadings_extreme <- geneloadings_sorted %>% dplyr::slice(seq_len(topN))#, with_ties = FALSE)
     colnames(geneloadings_extreme) <- c(dplyr::all_of(keep), "loading")
     geneloadings_extreme$PC <- whichpc
-    geneloadings_extreme$Rank <- 1:topN
+    geneloadings_extreme$Rank <- seq_len(topN)
     return(geneloadings_extreme)
 }

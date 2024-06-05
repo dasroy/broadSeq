@@ -4,9 +4,9 @@
 #' @export
 #' @rdname use_limma
 use_limma_trend <- function(se, colData_id, control, treatment, rank=FALSE,...){
-    showPlot = FALSE
+    showPlot <- FALSE
     dottedArg <- list( ...)
-    if(!is.null(dottedArg$showPlot) ) showPlot = dottedArg$showPlot
+    if(!is.null(dottedArg$showPlot) ) showPlot <- dottedArg$showPlot
 
     return(use_limma(se = se, colData_id = colData_id,
                      control = control, treatment = treatment, rank = rank,
@@ -16,9 +16,9 @@ use_limma_trend <- function(se, colData_id, control, treatment, rank=FALSE,...){
 #' @export
 #' @rdname use_limma
 use_limma_voom <- function(se, colData_id, control, treatment,rank=FALSE,...){
-    showPlot = FALSE
+    showPlot <- FALSE
     dottedArg <- list( ...)
-    if(!is.null(dottedArg$showPlot) ) showPlot = dottedArg$showPlot
+    if(!is.null(dottedArg$showPlot) ) showPlot <- dottedArg$showPlot
 
     return(use_limma(se = se, colData_id = colData_id,
                      control = control, treatment = treatment, rank = rank,
@@ -353,14 +353,14 @@ use_EBSeq <- function(se, colData_id, control, treatment, rank=FALSE,...){
     control_names <- se[,se[[colData_id]]==control] %>% colnames()
     treatment_names <- se[,se[[colData_id]]==treatment] %>% colnames()
     tabla <- SummarizedExperiment::assays(se)[["counts"]][,c(control_names,treatment_names)]
-    Sizes=EBSeq::MedianNorm(tabla)
+    Sizes <- EBSeq::MedianNorm(tabla)
 
-    EBOut=EBSeq::EBTest(Data=tabla,
+    EBOut <- EBSeq::EBTest(Data=tabla,
                  Conditions=factor(c(rep(control,length(control_names)),
                                      rep(treatment,length(treatment_names))),
                                       levels = c(control,treatment)),
                  sizeFactors=Sizes, maxround=5)
-    EBDERes=EBSeq::GetDEResults(EBOut, ...)
+    EBDERes <- EBSeq::GetDEResults(EBOut, ...)
     ##Calculate FC
     FC <- EBSeq::PostFC(EBOut, SmallNum = 0.01)
 
@@ -417,7 +417,7 @@ use_NOIseq <- function(se, colData_id, control, treatment, rank=FALSE, ...){
     treatment_names <- se[,se[[colData_id]]==treatment] %>% colnames()
     tabla <- SummarizedExperiment::assays(se)[["counts"]][,c(control_names,treatment_names)] %>% as.data.frame()
 
-    expt_factors = data.frame(Condition = factor(c(
+    expt_factors <- data.frame(Condition = factor(c(
         rep(treatment, length(treatment_names)),
         rep(control, length(control_names))
     )))
@@ -425,7 +425,7 @@ use_NOIseq <- function(se, colData_id, control, treatment, rank=FALSE, ...){
     expt_data <- NOISeq::readData(data = tabla, factors = expt_factors)
 
     ##Available normalization methods: norm = "rpkm", "uqua", "tmm2, "none"
-    expt_noiseqbio = NOISeq::noiseqbio(input= expt_data, factor=colData_id, ...)
+    expt_noiseqbio <- NOISeq::noiseqbio(input= expt_data, factor=colData_id, ...)
 
     if(rank){
         expt_noiseqbio@results[[1]] %>%
@@ -548,7 +548,7 @@ use_multDE <- function(deFun_list, return.df= FALSE ,se ,
                 control = control, treatment = treatment, ...)
 
     named_result <- list()
-    for (i in 1:length(y)) {
+    for (i in seq_len(length(y))) {
         named_result[[names(deFun_list)[i]]] <- y[[i]]
     }
     y <- named_result

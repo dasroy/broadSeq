@@ -119,7 +119,7 @@ assay_plot <- function(se, feature, assayNames = c("counts"), x, ...){
     d <- sechm::meltSE(se,features = feature,assayName = assayNames )
 
     listPlot <- list()
-    for(i in 1:length(assayNames)){
+    for(i in seq_len(length(assayNames))){
         listPlot[[i]] <- d %>% ggboxplot( y=assayNames[i],...)
     }
 
@@ -164,13 +164,13 @@ combinedEnrichment <- function(DEG_table, geneCol = "ID", logCol = "logFoldChang
     requireNamespace(OrgDB,quietly = TRUE)
     stopifnot(keyType %in% keytypes(get(OrgDB)))
     ## feature 1: numeric vector
-    DEGlist = DEG_table[[logCol]]
+    DEGlist <- DEG_table[[logCol]]
 
     ## feature 2: named vector
-    names(DEGlist) = as.character(DEG_table[,geneCol])
+    names(DEGlist) <- as.character(DEG_table[,geneCol])
 
-    DEGlist = sort(DEGlist, decreasing = TRUE)
-    print("Performing: Gene Set Enrichment Analysis")
+    DEGlist <- sort(DEGlist, decreasing = TRUE)
+    message("Performing: Gene Set Enrichment Analysis")
     gseResult <- gseGO(DEGlist,
                        OrgDb         = OrgDB,
                        ont           = ont,
@@ -180,7 +180,7 @@ combinedEnrichment <- function(DEG_table, geneCol = "ID", logCol = "logFoldChang
                        verbose      = FALSE,
                        keyType = keyType)
 
-    print("Performing: Over-representation analysis of UP regulated genes")
+    message("Performing: Over-representation analysis of UP regulated genes")
     oraUP <- enrichGO(subset(DEG_table, get(logCol) >= logfoldCut)[,geneCol],
                       universe      = universe,
                       OrgDb         = OrgDB,
@@ -191,7 +191,7 @@ combinedEnrichment <- function(DEG_table, geneCol = "ID", logCol = "logFoldChang
                       readable      = TRUE,
                       keyType = keyType)
 
-    print("Performing: Over-representation analysis of DOWN regulated genes")
+    message("Performing: Over-representation analysis of DOWN regulated genes")
     oraDOWN <- enrichGO(subset(DEG_table, get(logCol) <= -1*logfoldCut)[,geneCol],
                         universe      = universe,
                         OrgDb         = OrgDB,
@@ -222,7 +222,7 @@ round_df <- function(df, digits) {
     (df)
 }
 
-is.na2 = function(x){
+is.na2 <- function(x){
     if(is.list(x) | length(x) > 1){
         return(FALSE)
     }

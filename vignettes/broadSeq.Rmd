@@ -22,21 +22,26 @@ library(broadSeq)
 
 # Introduction  
 
-To analyze RNA-seq **count** data, there are several ways/methods for each steps like
+To analyze RNA-seq **count** data, there are several ways/methods for each steps
+like
 
 1.  Transforming/scaling of the count data,
 
-2.  QC by clustering the samples using PCA, hierarchical clustering or multidimensional scaling
+2.  QC by clustering the samples using PCA, hierarchical clustering or 
+multidimensional scaling
 
 3.  Most importantly identification of differentially expressed.
 
-For each of these steps, there are different packages or tools whose input and output formats are very different. Therefore it is very difficult to use all these features from different packages in a study.
+For each of these steps, there are different packages or tools whose input and 
+output formats are very different. Therefore it is very difficult to use all 
+these features from different packages in a study.
 
 ```{r fig.cap = "Input and output data structures of different methods to idetify differentially expressed genes.", echo = FALSE}
 knitr::include_graphics("img/io_p.png")
 ```
 
-The *broadSeq* package simplifies the process of including many **Bioconductor** packages for RNA-seq data and evaluating their performance.
+The *broadSeq* package simplifies the process of including many **Bioconductor** 
+packages for RNA-seq data and evaluating their performance.
 
 ```{r echo = FALSE,fig.cap="Flowchart"}
 knitr::include_graphics("img/broadSeq.png")
@@ -46,7 +51,8 @@ The silent features of *broadSeq* are
 
 -   **Single input format** : `r Biocpkg("SummarizedExperiment")` 
 -   **Single output format** : as base `data.frame`
--   Visualization : Using `ggplot2` and `ggpubr` packages for publication ready figures
+-   Visualization : Using `ggplot2` and `ggpubr` packages for publication ready 
+figures
 -   Easy and advanced PCA analysis
 -   Function oriented interface to include in existing pipeline.
 -   Differential expression
@@ -60,8 +66,8 @@ library(ggplot2)
 ```
 
 Here we read gene expression data which is quantified by `salmon` and
-processed by `r Biocpkg("tximport")` package. The `salmon` generates count data, "abundance"
-(TPM) and gene length values. Therefore we may rename the corresponding
+processed by `r Biocpkg("tximport")` package. The `salmon` generates count data,
+"abundance" (TPM) and gene length values. Therefore we may rename the corresponding
 assay slot 'abundance' to 'TPM'.
 
 These data belongs to this studies reference!!
@@ -606,7 +612,7 @@ multi_result %>% broadSeq::volcanoPlot(
 <details>
 <summary>Session Info</summary>
 
-```{r echo=FALSE,message=FALSE,warning=FALSE,error=FALSE}
+```{r warning=FALSE,error=FALSE}
 sessionInfo()
 ```
 

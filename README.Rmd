@@ -1,7 +1,5 @@
 ---
 output: github_document
-bibliography: reference.bib 
-csl: annual-review-of-cell-and-developmental-biology.csl
 link-citations: TRUE
 editor_options: 
   markdown: 
@@ -56,7 +54,7 @@ io_p
 
 The goal of broadSeq is to do easily RNA-seq data analysis with multiple
 methods (usually which needs many different input formats). Here the
-user will provide the expression data as a SummarizedExperiment object
+user will provide the expression data as a `r BiocStyle::Biocpkg("SummarizedExperiment")` object
 and will get results from different methods. This function oriented package will
 give user freedom to develop customized and reproducible workflow. Additionally,
 it will also help to quickly evaluate different methods easily.

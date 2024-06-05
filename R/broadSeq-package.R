@@ -1,4 +1,4 @@
-#' @keywords internal
+#' broadSeq : for streamlined exploration of RNA-seq data
 "_PACKAGE"
 
 ## usethis namespace: start
