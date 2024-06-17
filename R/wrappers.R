@@ -447,6 +447,7 @@ use_NOIseq <- function(se, colData_id, control, treatment, rank=FALSE, ...){
 #' @param ... other arguments to be passed to samr::SAMseq
 #'
 #' @return a data.frame object as a result
+#' @export
 #' @importFrom dplyr %>% left_join
 #' @importFrom stringr str_remove
 #' @examples
