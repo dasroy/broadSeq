@@ -93,7 +93,7 @@ genes_plot <- function(se, features, assayName = "counts", facet.by = "feature",
     }
 
     d <- sechm::meltSE(se,features )
-    d %>% ggboxplot(y=assayName, ... ) %>%
+    d %>% ggboxplot(y=assayName, x=x, ... ) %>%
         facet(facet.by , scale="free")
 }
 
@@ -120,7 +120,7 @@ assay_plot <- function(se, feature, assayNames = c("counts"), x, ...){
 
     listPlot <- list()
     for(i in seq_len(length(assayNames))){
-        listPlot[[i]] <- d %>% ggboxplot( y=assayNames[i],...)
+        listPlot[[i]] <- d %>% ggboxplot( y=assayNames[i], x = x, ...)
     }
 
     ggarrange(plotlist = listPlot, common.legend = TRUE, legend =  "bottom") %>%
